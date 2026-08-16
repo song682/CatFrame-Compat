@@ -1,3 +1,3 @@
 # CatFrame Compat
 
-The compat level of some of the mod compatibility
+The compat level of some of the mod compatibility for the catframe.
