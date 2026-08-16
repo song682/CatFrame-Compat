@@ -1,5 +1,6 @@
 package decok.dfcdvadstf.catframe.compact;
 
+import decok.dfcdvadstf.catframe.mixin.late.MixinRenderJsonItemModel;
 import io.qzz.dfdvdsf.jarfile.JarContents;
 import io.qzz.dfdvdsf.jarfile.JarNames;
 import io.qzz.dfdvdsf.jarfile.JarVersionGuesser;
@@ -26,7 +27,7 @@ import java.lang.reflect.Method;
  * （{@link JarContents#findClassEntries}）：纯文件系统操作，不依赖类加载器状态；
  * 官方版独有类 {@code ItemPatchingLoader} 与 Mixin 版独有类 {@code ClientPhysic}
  * 作为区分锚点。兼容策略：官方版直接崩溃提示移除；Mixin 版放行，并在 CatFrame 渲染器
- * （{@link decok.dfcdvadstf.catframe.mixin.MixinRenderJsonItemModel}）中复刻其旋转物理。</p>
+ * （{@link MixinRenderJsonItemModel}）中复刻其旋转物理。</p>
  */
 public class ItemPhysic {
 
