@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.asm;
+package decok.dfcdvadstf.catframe.mixin;
 
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
