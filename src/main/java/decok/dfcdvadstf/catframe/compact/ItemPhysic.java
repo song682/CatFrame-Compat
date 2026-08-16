@@ -55,7 +55,25 @@ public class ItemPhysic {
     /** 命中的 itemphysic jar 文件名（不含扩展名，用于日志与版本提示）。 */
     private static String detectedJarName;
 
+    /**
+     * 兼容层总开关（由主类读 config 后调用 {@link #setEnabled} 设置）：
+     * 关闭后检测与注入全部失效，等价于完全无视 ItemPhysic。
+     */
+    private static boolean enabled = true;
+
     private ItemPhysic() {}
+
+    /**
+     * 启用或禁用整个 ItemPhysic 兼容层（config 开关）。
+     * 关闭后 {@link #isInstalled()} / {@link #isOfficialInstalled()} /
+     * {@link #isMixinInstalled()} 一律返回 {@code false}，
+     * 崩溃拒绝与旋转注入均不再生效。
+     *
+     * @param enabled {@code true} 启用（默认）；{@code false} 完全绕过
+     */
+    public static void setEnabled(boolean enabled) {
+        ItemPhysic.enabled = enabled;
+    }
 
     /**
      * 扫描 mods 目录中的 jar，按内容判定 itemphysic 发行版。
@@ -75,6 +93,7 @@ public class ItemPhysic {
     public static void scan(File modsDir) {
         if (scanned) return;
         scanned = true;
+        if (!enabled) return;
 
         // Tier 1: Forge-level version check — a version this high can only be
         // the Mixin rewrite, since the official line never reached it.
@@ -112,7 +131,7 @@ public class ItemPhysic {
      * 是否检测到任何版本的 ItemPhysic（基于 {@link #scan(File)} 的 jar 内容判定）。
      */
     public static boolean isInstalled() {
-        return official || mixin;
+        return enabled && (official || mixin);
     }
 
     /**
@@ -121,7 +140,7 @@ public class ItemPhysic {
      * 无条件短路 ForgeHooksClient），需要拒绝启动。</p>
      */
     public static boolean isOfficialInstalled() {
-        return official;
+        return enabled && official;
     }
 
     /**
@@ -130,7 +149,7 @@ public class ItemPhysic {
      * 与 CatFrame 结构上兼容。</p>
      */
     public static boolean isMixinInstalled() {
-        return mixin;
+        return enabled && mixin;
     }
 
     /**
