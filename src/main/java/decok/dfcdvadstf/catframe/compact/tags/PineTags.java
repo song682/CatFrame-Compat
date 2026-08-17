@@ -9,6 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +32,15 @@ import java.util.Map;
  *
  * <p>实现要点 / Implementation notes：</p>
  * <ul>
- *   <li>标签池字段 {@code TagsManager.tags} 为私有，通过反射读取；
- *       其余部分使用 PineappleTags 的公开 API。
- *       The tag pool field is private and read reflectively; everything else
- *       goes through PineappleTags' public API.</li>
+ *   <li>标签池容器 {@code TagsManager.tags} 为私有且无任何公开枚举方法，
+ *       这是全类唯一需要反射的位置：先按字段名查找，失败则回退为按
+ *       “静态 Map 字段”类型特征扫描；取得池后，每个标签的内容读取均使用
+ *       公开方法 {@code Tag#getList()}。
+ *       The tag pool container is private with no public enumeration method —
+ *       the only reflection point of this class: looked up by field name first,
+ *       then by the "static Map field" type signature as fallback. Once the
+ *       pool is obtained, tag contents are read via the public
+ *       {@code Tag#getList()}.</li>
  *   <li>ItemStack 元素按所属 Item 归并（CatFrame 标签是注册表对象级别，
  *       不携带 meta/NBT 信息）。ItemStack entries are merged by their Item,
  *       since CatFrame tags live at registry-object level (no meta/NBT).</li>
@@ -175,14 +181,29 @@ public class PineTags {
     }
 
     /**
-     * 反射读取 PineappleTags 的私有标签池 {@code TagsManager.tags}。
-     * 失败（未安装 / 字段改名 / 类型变动）时返回 {@code null} 静默降级。
+     * 反射读取 PineappleTags 的私有标签池 {@code TagsManager.tags}：
+     * 优先按字段名定位；若字段改名，则回退为查找“静态且类型为 Map”的
+     * 声明字段（该池是 TagsManager 中唯一的静态 Map 字段）。
+     * 失败（未安装 / 结构变动）时返回 {@code null} 静默降级。
      */
     @SuppressWarnings("unchecked")
     private static Map<String, ?> obtainTagPool() {
         try {
             if (tagPoolField == null) {
-                tagPoolField = TagsManager.class.getDeclaredField(TAG_POOL_FIELD);
+                try {
+                    tagPoolField = TagsManager.class.getDeclaredField(TAG_POOL_FIELD);
+                } catch (NoSuchFieldException e) {
+                    // 字段改名回退：按“静态 Map 字段”类型特征定位。
+                    // Fallback: locate by the "static Map field" signature.
+                    for (Field candidate : TagsManager.class.getDeclaredFields()) {
+                        if (Modifier.isStatic(candidate.getModifiers())
+                                && Map.class.isAssignableFrom(candidate.getType())) {
+                            tagPoolField = candidate;
+                            break;
+                        }
+                    }
+                }
+                if (tagPoolField == null) return null;
                 tagPoolField.setAccessible(true);
             }
             Object pool = tagPoolField.get(null);
