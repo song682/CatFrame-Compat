@@ -26,15 +26,7 @@ public class CatFrameCompact {
         // all detection, crash rejection and rotation injection are bypassed.
         // ItemPhysic 兼容层总开关：关闭后检测、崩溃拒绝与旋转注入全部绕过。
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-        boolean itemPhysicCompat = config.getBoolean(
-                "enableItemPhysicCompat",
-                Configuration.CATEGORY_GENERAL,
-                true,
-                "Enable the ItemPhysic compatibility layer: detection, rejection "
-                + "of the official ASM coremod, and drop-rotation injection for the "
-                + "Mixin rewrite. Set to false to bypass all ItemPhysic handling.\n"
-                + "是否启用 ItemPhysic 兼容层：检测、拒绝官方 ASM coremod，并为 Mixin 版注入"
-                + "掉落旋转。设为 false 可完全绕过 ItemPhysic 相关处理。");
+        boolean itemPhysicCompat = config.getBoolean("enableItemPhysicCompat", Configuration.CATEGORY_GENERAL, false, "Enable the ItemPhysic compatibility layer: detection, rejection of the official ASM coremod, and drop-rotation injection for the Mixin rewrite. Set to false to bypass all ItemPhysic handling.");
         if (config.hasChanged()) {
             config.save();
         }

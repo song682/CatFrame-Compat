@@ -58,21 +58,24 @@ public class ItemPhysic {
     /**
      * 兼容层总开关（由主类读 config 后调用 {@link #setEnabled} 设置）：
      * 关闭后检测与注入全部失效，等价于完全无视 ItemPhysic。
+     * 初始值跟随 itemphysic 实际安装状态（未装则默认不启用）。
      */
-    private static boolean enabled = true;
+    private static boolean enabled = CompactBase.isItemPhysicInstalled();
 
     private ItemPhysic() {}
 
     /**
      * 启用或禁用整个 ItemPhysic 兼容层（config 开关）。
+     * 实际生效需要 config 开关与 itemphysic 安装状态同时满足：
+     * 即使 config 允许，未安装 itemphysic 时也保持禁用。
      * 关闭后 {@link #isInstalled()} / {@link #isOfficialInstalled()} /
      * {@link #isMixinInstalled()} 一律返回 {@code false}，
      * 崩溃拒绝与旋转注入均不再生效。
      *
-     * @param enabled {@code true} 启用（默认）；{@code false} 完全绕过
+     * @param configEnabled {@code true} 启用（默认）；{@code false} 完全绕过
      */
-    public static void setEnabled(boolean enabled) {
-        ItemPhysic.enabled = enabled;
+    public static void setEnabled(boolean configEnabled) {
+        enabled = configEnabled && CompactBase.isItemPhysicInstalled();
     }
 
     /**
