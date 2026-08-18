@@ -27,10 +27,6 @@ public class CompactBase {
     }
 
     // Tags support
-    public static boolean isHogTagInstalled() {
-        return Loader.isModLoaded("hogutils");
-    }
-
     public static boolean isWolfTagInstalled() {
         return Loader.isModLoaded("pineapple_tag");
     }

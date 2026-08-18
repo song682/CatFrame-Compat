@@ -26,12 +26,10 @@ public class CatFrameCompact {
     public void preInit(FMLPreInitializationEvent event) {
         // Master switch for the ItemPhysic compatibility layer: when disabled,
         // all detection, crash rejection and rotation injection are bypassed.
-        // ItemPhysic 兼容层总开关：关闭后检测、崩溃拒绝与旋转注入全部绕过。
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         boolean itemPhysicCompat = config.getBoolean("enableItemPhysicCompat", Configuration.CATEGORY_GENERAL, false, "Enable the ItemPhysic compatibility layer: detection, rejection of the official ASM coremod, and drop-rotation injection for the Mixin rewrite. Set to false to bypass all ItemPhysic handling.");
         // Master switch for the PineappleTags compatibility layer: when disabled,
         // tag-pool synchronization and tag queries are bypassed entirely.
-        // PineappleTags 兼容层总开关：关闭后标签池同步与标签查询全部绕过。
         boolean pineTagsCompat = config.getBoolean("enablePineTagsCompat", Configuration.CATEGORY_GENERAL, true, "Enable the PineappleTags compatibility layer: converts PineappleTags' runtime tag pool into CatFrame tags at post-init so CatFrame tag queries and item detection cover PineappleTags content. Set to false to disable the integration.");
         if (config.hasChanged()) {
             config.save();
@@ -40,7 +38,6 @@ public class CatFrameCompact {
         PineTags.setEnabled(pineTagsCompat);
 
         // The mods directory sits next to the config directory; this also holds in dev.
-        // mods 目录位于配置目录的平级位置；该推导在开发环境下同样成立。
         ItemPhysic.scan(new File(event.getModConfigurationDirectory().getParentFile(), "mods"));
 
         // Reject the official ASM-coremod ItemPhysic: it wholesale-replaces
