@@ -63,9 +63,6 @@ public class CatFrameCompact {
         // are done by consumer mods, and post-init is the first safe point where
         // the tag pool is (almost) complete. Re-call PineTags.syncTags() manually
         // if a mod registers pineapple tags even later.
-        // 放在 postInit 同步：各模组对 PineappleTags 的注册发生在 init 阶段，
-        // postInit 是标签池基本完整的最早安全时机；若有模组注册得更晚，
-        // 可手动再次调用 PineTags.syncTags() 刷新。
         if (PineTags.isEnabled()) {
             int synced = PineTags.syncTags();
             if (synced > 0) {
