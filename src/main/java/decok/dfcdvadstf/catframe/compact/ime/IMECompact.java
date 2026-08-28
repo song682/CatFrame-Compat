@@ -45,18 +45,9 @@ public final class IMECompact implements IMECommitTarget {
      * once at client init).
      */
     public static void register() {
-        if (isLoaded()) {
+        if (CompactBase.isIMEBackportInstalled()) {
             IMEInputAPI.register(INSTANCE);
         }
-    }
-
-    /**
-     * Whether IMEInputBackport is loaded (modid {@code ime_input_backport}).
-     *
-     * @return true if loaded
-     */
-    public static boolean isLoaded() {
-        return CompactBase.isIMEBackportInstalled();
     }
 
     @Override

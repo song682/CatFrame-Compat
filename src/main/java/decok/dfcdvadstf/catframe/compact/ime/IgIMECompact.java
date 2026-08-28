@@ -45,18 +45,9 @@ public final class IgIMECompact {
      * (call once at client init).
      */
     public static void register() {
-        if (isLoaded() && !CompactBase.isIMEBackportInstalled()) {
+        if (CompactBase.isIGIMEInstalled() && !CompactBase.isIMEBackportInstalled()) {
             MinecraftForge.EVENT_BUS.register(INSTANCE);
         }
-    }
-
-    /**
-     * Whether IngameIME is loaded (modid {@code ingameime}).
-     *
-     * @return true = loaded
-     */
-    public static boolean isLoaded() {
-        return CompactBase.isIGIMEInstalled();
     }
 
     /**

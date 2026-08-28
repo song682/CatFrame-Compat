@@ -77,7 +77,7 @@ public class ItemPhysic {
      * It takes effect only when both the config switch and the itemphysic
      * installation status are satisfied: even with the config allowing it, the
      * layer stays disabled when itemphysic is not installed. When disabled,
-     * {@link #isInstalled()} / {@link #isOfficialInstalled()} /
+     * {@link #isOfficialInstalled()} /
      * {@link #isMixinInstalled()} all return {@code false}, and neither the
      * crash rejection nor the rotation injection takes effect.
      *
@@ -138,13 +138,6 @@ public class ItemPhysic {
                 }
             }
         }
-    }
-
-    /**
-     * Whether any ItemPhysic variant was detected (jar-content verdict from {@link #scan(File)}).
-     */
-    public static boolean isInstalled() {
-        return enabled && (official || mixin);
     }
 
     /**
