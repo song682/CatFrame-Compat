@@ -52,32 +52,6 @@ public class PineTags {
     private static int lastSyncedCount;
 
     /**
-     * Compatibility layer master switch (after the main class reads the config, {@link #setEnabled} is called to set it):
-     * Turning it off disables all sync and queries, effectively ignoring PineappleTags.
-     * The initial value follows the actual installation status of pineapple_tag (defaults to off if not installed).
-     */
-    private static boolean enabled = CompactBase.isWolfTagInstalled();
-
-    /**
-     * Enables or disables the whole PineappleTags compatibility layer (config switch).
-     * It takes effect only when both the config switch and the pineapple_tag
-     * installation status are satisfied.
-     *
-     * @param configEnabled {@code true} to enable; {@code false} to bypass entirely
-     */
-    public static void setEnabled(boolean configEnabled) {
-        enabled = configEnabled && CompactBase.isWolfTagInstalled();
-    }
-
-    /**
-     * Whether the compatibility layer is enabled (config allows it and
-     * pineapple_tag is installed).
-     */
-    public static boolean isEnabled() {
-        return enabled;
-    }
-
-    /**
      * Converts the whole PineappleTags tag pool into CatFrame's Tag system.
      * <p>Should be called at post-init (mod registrations into PineappleTags
      * are done by then); if a mod registers tags later, call this method again
@@ -89,7 +63,7 @@ public class PineTags {
      * @return the number of elements synced into CatFrame this run
      */
     public static int syncTags() {
-        if (!enabled) return 0;
+        if (!CompactBase.isWolfTagInstalled()) return 0;
 
         Map<String, ?> pool = obtainTagPool();
         if (pool == null) return 0;
@@ -131,7 +105,7 @@ public class PineTags {
      * @param tagName PineappleTags tag name (may use "namespace:path" form)
      */
     public static boolean is(Item item, String tagName) {
-        if (!enabled || item == null || tagName == null) return false;
+        if (!CompactBase.isWolfTagInstalled() || item == null || tagName == null) return false;
         String[] location = splitTagName(tagName);
         return CatFrameTags.is(item, location[0], location[1]);
     }
@@ -141,7 +115,7 @@ public class PineTags {
      * the synced CatFrame tags).
      */
     public static boolean is(Block block, String tagName) {
-        if (!enabled || block == null || tagName == null) return false;
+        if (!CompactBase.isWolfTagInstalled() || block == null || tagName == null) return false;
         String[] location = splitTagName(tagName);
         return CatFrameTags.is(block, location[0], location[1]);
     }
@@ -154,7 +128,7 @@ public class PineTags {
      * @param object any object (usually an Item / ItemStack)
      */
     public static List<String> getPineappleTagNames(Object object) {
-        if (!enabled || object == null) return Collections.emptyList();
+        if (!CompactBase.isWolfTagInstalled() || object == null) return Collections.emptyList();
         try {
             return TagsManager.manager().getTagsFromObjects(object);
         } catch (Throwable ignored) {

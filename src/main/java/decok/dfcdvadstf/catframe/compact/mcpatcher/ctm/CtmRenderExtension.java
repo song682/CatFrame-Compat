@@ -41,7 +41,7 @@ public final class CtmRenderExtension implements IModelRenderExtension {
         }
         String baseName = ctx.quad.icon != null ? ctx.quad.icon.getIconName() : null;
         IIcon tile = CtmTileSelector.select(ctx.world, ctx.x, ctx.y, ctx.z,
-                ctx.block, ctx.metadata, face, baseName);
+                ctx.block, ctx.metadata, face, baseName, ctx.quad);
         if (tile != null) {
             ctx.iconOverride = tile;
         }

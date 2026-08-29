@@ -14,12 +14,21 @@ public class CompactBase {
     }
 
     // MCPatcher Format + OptiFine-like mod compact
+
+    public static boolean isMCPatcherForgeInstalled() {
+        return Loader.isModLoaded("mcpatcherforge");
+    }
+
     public static boolean isAngelicaInstalled() {
         return Loader.isModLoaded("angelica");
     }
 
     public static boolean isNotFineInstalled() {
         return Loader.isModLoaded("notfine");
+    }
+
+    public static boolean isRightProperMCPatcherInstalled() {
+        return Loader.isModLoaded("mcpatcher");
     }
 
     public static boolean isOptiFutureInstalled() {
@@ -29,6 +38,10 @@ public class CompactBase {
     // Tags support
     public static boolean isWolfTagInstalled() {
         return Loader.isModLoaded("pineapple_tag");
+    }
+
+    public static boolean isHogsTagInstalled() {
+        return Loader.isModLoaded("hogutils");
     }
 
     // Model support

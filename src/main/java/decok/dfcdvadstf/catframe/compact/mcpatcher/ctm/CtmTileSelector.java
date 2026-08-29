@@ -8,8 +8,12 @@ import decok.dfcdvadstf.catframe.model.core.baking.JsonModelBake.BakedQuad;
 import decok.dfcdvadstf.catframe.model.state.BlockStateModel;
 import decok.dfcdvadstf.catframe.model.state.BlockStateModelPart;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFence;
+import net.minecraft.block.BlockPane;
+import net.minecraft.block.BlockWall;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -34,6 +38,21 @@ import java.util.List;
  * Scope: only {@code method=ctm} is selected here; the other methods
  * (horizontal/vertical/random/...) land in a later stage and fall through
  * to the vanilla texture.
+ * <p>
+ * P3 (pane specialisation):
+ * <ul>
+ *   <li>Neighbours of pane-like connectors ({@link BlockPane}, {@link BlockWall},
+ *       {@link BlockFence}) must also pass the block's own geometric connection
+ *       check ({@code canPaneConnectTo} / {@code canConnectWallTo} /
+ *       {@code canConnectFenceTo}, mirroring
+ *       {@code VanillaBlockResolvers.PANE}), otherwise a diagonal pane would
+ *       count as connected through air;</li>
+ *   <li>UP/DOWN quads of panes skip CTM painting on the connecting bars and the
+ *       centre post, mirroring OptiFine 1.17.1
+ *       {@code ConnectedTextures.skipConnectedTexture}; the core 1.7.10 pane
+ *       templates use the same local UVs as the modern originals, so no UV
+ *       remapping is needed for parity with OptiFine standalone.</li>
+ * </ul>
  */
 @SideOnly(Side.CLIENT)
 public final class CtmTileSelector {
@@ -51,11 +70,13 @@ public final class CtmTileSelector {
      * @param meta         block metadata
      * @param side         rendered face (Direction ordinal = OptiFine side)
      * @param baseIconName flat base texture name of the quad icon, may be null
+     * @param quad         the rendered quad (pane UP/DOWN skip inspection)
      * @return the tile icon to override with, or null
      */
     @Nullable
     public static IIcon select(IBlockAccess world, int x, int y, int z,
-                               Block block, int meta, Direction side, String baseIconName) {
+                               Block block, int meta, Direction side, String baseIconName,
+                               BakedQuad quad) {
         CtmRuleSet rules = CtmManager.getRuleSet();
         if (rules.isEmpty()) {
             return null;
@@ -64,7 +85,7 @@ public final class CtmTileSelector {
         // Tile-class rules win over block-class rules (MCPatcher format spec).
         if (baseKey != null) {
             for (int ruleIndex : rules.tileRules(baseKey)) {
-                IIcon icon = tryRule(rules, ruleIndex, world, x, y, z, block, meta, side, baseKey);
+                IIcon icon = tryRule(rules, ruleIndex, world, x, y, z, block, meta, side, baseKey, quad);
                 if (icon != null) {
                     return icon;
                 }
@@ -72,7 +93,7 @@ public final class CtmTileSelector {
         }
         String blockKey = CtmRuleSet.flatten(Block.blockRegistry.getNameForObject(block));
         for (int ruleIndex : rules.blockRules(blockKey)) {
-            IIcon icon = tryRule(rules, ruleIndex, world, x, y, z, block, meta, side, baseKey);
+            IIcon icon = tryRule(rules, ruleIndex, world, x, y, z, block, meta, side, baseKey, quad);
             if (icon != null) {
                 return icon;
             }
@@ -80,17 +101,20 @@ public final class CtmTileSelector {
         return null;
     }
 
-    /** Apply one rule: filters, 47-layout selection, placeholder lookup. */
+    /** Apply one rule: filters, pane skip, 47-layout selection, placeholder lookup. */
     @Nullable
     private static IIcon tryRule(CtmRuleSet rules, int ruleIndex, IBlockAccess world,
                                  int x, int y, int z, Block block, int meta,
-                                 Direction side, String baseKey) {
+                                 Direction side, String baseKey, BakedQuad quad) {
         CtmProperties rule = rules.rules().get(ruleIndex);
         if (!"ctm".equals(rule.method)) {
             return null; // other methods are handled by a later stage
         }
         if (!rule.matchesMetadata(meta) || !rule.matchesFace(side.ordinal())) {
             return null;
+        }
+        if (skipPaneQuad(block, quad, world, x, y, z, side)) {
+            return null; // pane bars/post keep their edge texture (OptiFine skipConnectedTexture)
         }
         int tileIndex = connectedTile(rule, world, x, y, z, side, block, meta, baseKey);
         return CtmTileRegistry.getIcon(CtmTileRegistry.PREFIX + "r" + ruleIndex + "/" + tileIndex);
@@ -359,6 +383,13 @@ public final class CtmTileSelector {
         if (nb == null || nb.isAir(world, x, y, z)) {
             return false;
         }
+        if (isPaneConnector(selfBlock)) {
+            // P3: pane-like connectors (glass panes, iron bars, fences, walls)
+            // require a geometric connection (mirroring VanillaBlockResolvers.PANE),
+            // so a diagonal pane never counts as connected through air.
+            return canConnect(selfBlock, world, x, y, z,
+                    ForgeDirection.getOrientation(side.ordinal()));
+        }
         switch (rule.connectType) {
             case 1:
                 return nb == selfBlock;
@@ -371,6 +402,82 @@ public final class CtmTileSelector {
             default:
                 return false;
         }
+    }
+
+    /**
+     * True when the block is a pane-like connector whose neighbours must pass
+     * a geometric connection check ({@code BlockPane}/{@code BlockWall}/
+     * {@code BlockFence} and their subclasses, i.e. everything the core
+     * {@code VanillaBlockResolvers.PANE} multipart resolver covers).
+     */
+    private static boolean isPaneConnector(Block block) {
+        return block instanceof BlockPane || block instanceof BlockWall || block instanceof BlockFence;
+    }
+
+    /**
+     * Geometric connection check, mirroring {@code VanillaBlockResolvers.PANE}:
+     * the neighbouring position {@code (x, y, z)} must be connectable for the
+     * self block's own type (wall/fence/pane dispatch).
+     */
+    private static boolean canConnect(Block self, IBlockAccess world,
+                                      int x, int y, int z, ForgeDirection dir) {
+        if (self instanceof BlockWall) {
+            return ((BlockWall) self).canConnectWallTo(world, x, y, z);
+        }
+        if (self instanceof BlockFence) {
+            return ((BlockFence) self).canConnectFenceTo(world, x, y, z);
+        }
+        if (!(self instanceof BlockPane)) {
+            return false;
+        }
+        return ((BlockPane) self).canPaneConnectTo(world, x, y, z, dir);
+    }
+
+    /**
+     * Pane UP/DOWN quad skip (OptiFine 1.17.1 skipConnectedTexture port):
+     * quads of the connecting bars are skipped while the corresponding
+     * direction is connected, and the centre post is always skipped, so the
+     * CTM tile never paints the pane top view. The core 1.7.10 pane templates
+     * produce only full-face UP/DOWN quads, so OptiFine's isFaceQuad guard is
+     * omitted. Connections are probed geometrically (same as the core
+     * multipart resolver) rather than decoded from metadata.
+     */
+    private static boolean skipPaneQuad(Block selfBlock, BakedQuad quad, IBlockAccess world,
+                                        int x, int y, int z, Direction side) {
+        if (!(selfBlock instanceof BlockPane)) {
+            return false;
+        }
+        if (side != Direction.UP && side != Direction.DOWN) {
+            return false;
+        }
+        double midX = quadMid(quad, true);
+        if (midX < 0.4) {
+            return canConnect(selfBlock, world, x - 1, y, z, ForgeDirection.WEST);
+        } else if (midX > 0.6) {
+            return canConnect(selfBlock, world, x + 1, y, z, ForgeDirection.EAST);
+        }
+        double midZ = quadMid(quad, false);
+        if (midZ < 0.4) {
+            return canConnect(selfBlock, world, x, y, z - 1, ForgeDirection.NORTH);
+        } else if (midZ > 0.6) {
+            return canConnect(selfBlock, world, x, y, z + 1, ForgeDirection.SOUTH);
+        }
+        return true; // centre post: never CTM-painted
+    }
+
+    /** Mid-point of the quad's X or Z extent, without allocation. */
+    private static double quadMid(BakedQuad quad, boolean xAxis) {
+        double min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
+        for (int i = 0; i < 4; i++) {
+            double v = xAxis ? quad.vertices[i].x : quad.vertices[i].z;
+            if (v < min) {
+                min = v;
+            }
+            if (v > max) {
+                max = v;
+            }
+        }
+        return (min + max) / 2.0;
     }
 
     /**
