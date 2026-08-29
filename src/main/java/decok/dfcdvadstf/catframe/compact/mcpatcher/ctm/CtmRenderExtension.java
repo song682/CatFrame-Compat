@@ -2,21 +2,26 @@ package decok.dfcdvadstf.catframe.compact.mcpatcher.ctm;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import decok.dfcdvadstf.catframe.core.Direction;
 import decok.dfcdvadstf.catframe.model.render.IModelRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.RenderContext;
 import decok.dfcdvadstf.catframe.model.render.api.RenderPhase;
+import net.minecraft.util.IIcon;
 
 /**
  * Render-extension entry point of the CTM compatibility layer.
  * <p>
  * Registered at {@link decok.dfcdvadstf.catframe.model.render.ModelRenderRegistry#DEFAULT_PRIORITY},
  * i.e. after all built-in extensions, so it sees the results of FaceCull/Tint.
- * P0 is a deliberate no-op: with an empty rule set the extension returns
- * immediately (zero overhead without a CTM pack). P2 adds tile selection here
- * and writes {@link RenderContext#iconOverride}.
+ * For each block-world quad it resolves a rule from the current
+ * {@link CtmRuleSet} snapshot and writes {@link RenderContext#iconOverride}
+ * with the selected tile icon; with an empty rule set the extension returns
+ * immediately (zero overhead without a CTM pack).
  * <p>
  * Thread safety: this instance is stateless; all state lives in the immutable
- * {@link CtmRuleSet} snapshot swapped by {@link CtmManager}.
+ * {@link CtmRuleSet} snapshot swapped by {@link CtmManager} and the
+ * per-stitch {@link CtmTileRegistry} icon table, both read-only during
+ * rendering.
  */
 @SideOnly(Side.CLIENT)
 public final class CtmRenderExtension implements IModelRenderExtension {
@@ -30,7 +35,15 @@ public final class CtmRenderExtension implements IModelRenderExtension {
         if (CtmManager.getRuleSet().isEmpty()) {
             return;
         }
-        // P2: resolve a rule for (block/tile, metadata, face, neighbors) and
-        // write ctx.iconOverride. Intentionally a no-op until the selector lands.
+        Direction face = ctx.quad != null ? ctx.quad.face : null;
+        if (face == null || ctx.block == null) {
+            return;
+        }
+        String baseName = ctx.quad.icon != null ? ctx.quad.icon.getIconName() : null;
+        IIcon tile = CtmTileSelector.select(ctx.world, ctx.x, ctx.y, ctx.z,
+                ctx.block, ctx.metadata, face, baseName);
+        if (tile != null) {
+            ctx.iconOverride = tile;
+        }
     }
 }

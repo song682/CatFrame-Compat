@@ -42,6 +42,23 @@ public final class CtmProperties {
     public final String faces;
     /** Raw metadata filter values, empty = no filter. */
     public final List<String> metadatas;
+    /**
+     * Resolved connect semantics for the tile selector:
+     * 1=block (same Block), 2=tile (same base texture name), 3=material,
+     * 4=state (same block + metadata); 0 = no connections (P2 selector
+     * never joins neighbours). Null/unknown values fall back to
+     * detectConnect (matchBlocks wins over matchTiles), mirroring
+     * OptiFine/MCPatcher.
+     */
+    public final int connectType;
+    /**
+     * Faces bit mask (bit 0-5 = DOWN/UP/NORTH/SOUTH/WEST/EAST ordinal),
+     * -1 = all faces. Parsed from the faces property (numeric or name
+     * tokens); unknown tokens are ignored.
+     */
+    public final int facesMask;
+    /** Expanded metadata filter values; empty = no filter. */
+    public final int[] metadataValues;
     /** Whether this rule passed validation and can be used for rendering. */
     public final boolean valid;
     /** Human-readable reason when {@link #valid} is false. */
@@ -51,6 +68,7 @@ public final class CtmProperties {
                           List<String> matchBlocks, List<String> matchTiles,
                           String method, List<String> tiles, String connect,
                           String faces, List<String> metadatas,
+                          int connectType, int facesMask, int[] metadataValues,
                           boolean valid, String invalidReason) {
         this.name = name;
         this.basePath = basePath;
@@ -62,6 +80,9 @@ public final class CtmProperties {
         this.connect = connect;
         this.faces = faces;
         this.metadatas = Collections.unmodifiableList(metadatas);
+        this.connectType = connectType;
+        this.facesMask = facesMask;
+        this.metadataValues = metadataValues;
         this.valid = valid;
         this.invalidReason = invalidReason;
     }
@@ -121,31 +142,164 @@ public final class CtmProperties {
         String connect = props.getProperty("connect");
         String faces = props.getProperty("faces");
         List<String> metadatas = splitList(props.getProperty("metadata"));
+        int connectType = parseConnectType(connect, matchBlocks, matchTiles);
+        int facesMask = parseFaces(faces);
+        int[] metadataValues = parseMetadatas(metadatas);
 
         int minTiles = minTilesFor(method);
         if (minTiles < 0) {
             return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
-                    method, tiles, connect, faces, metadatas,
+                    method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
                     false, "unsupported method '" + method + "'");
         }
         if (tiles.isEmpty()) {
             return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
-                    method, tiles, connect, faces, metadatas,
+                    method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
                     false, "no tiles specified");
         }
         if (tiles.size() < minTiles) {
             return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
-                    method, tiles, connect, faces, metadatas,
+                    method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
                     false, "method " + method + " needs at least " + minTiles
                     + " tiles, got " + tiles.size());
         }
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
             return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
-                    method, tiles, connect, faces, metadatas,
+                    method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
                     false, "no matchBlocks or matchTiles");
         }
         return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
-                method, tiles, connect, faces, metadatas, true, null);
+                method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
+                true, null);
+    }
+
+    /**
+     * True when the given metadata passes the metadata filter
+     * (an empty filter matches every value).
+     */
+    public boolean matchesMetadata(int meta) {
+        if (metadataValues.length == 0) {
+            return true;
+        }
+        for (int value : metadataValues) {
+            if (value == meta) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * True when the given face (Direction ordinal 0-5) passes the faces
+     * filter (-1 = all faces).
+     */
+    public boolean matchesFace(int side) {
+        return facesMask < 0 || ((1 << side) & facesMask) != 0;
+    }
+
+    /**
+     * Resolve the connect property to its numeric semantics; null or
+     * unknown values fall back to detection (matchBlocks wins, then
+     * matchTiles), matching OptiFine's detectConnect.
+     */
+    private static int parseConnectType(String connect, List<String> matchBlocks, List<String> matchTiles) {
+        if (connect != null) {
+            String c = connect.trim().toLowerCase();
+            if (c.equals("block")) {
+                return 1;
+            }
+            if (c.equals("tile")) {
+                return 2;
+            }
+            if (c.equals("material")) {
+                return 3;
+            }
+            if (c.equals("state")) {
+                return 4;
+            }
+        }
+        if (!matchBlocks.isEmpty()) {
+            return 1;
+        }
+        return matchTiles.isEmpty() ? 0 : 2;
+    }
+
+    /**
+     * Parse the faces property into a bit mask; -1 when absent or when no
+     * token resolves (all faces). Supports numeric 0-5 and face names.
+     */
+    private static int parseFaces(String raw) {
+        if (raw == null) {
+            return -1;
+        }
+        int mask = 0;
+        for (String token : raw.split("[,\\s]+")) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            int side = faceSide(token);
+            if (side >= 0) {
+                mask |= 1 << side;
+            }
+        }
+        return mask == 0 ? -1 : mask;
+    }
+
+    /** Face ordinal for a faces token, or -1 when not a valid face. */
+    private static int faceSide(String token) {
+        if (isInteger(token)) {
+            int n = Integer.parseInt(token);
+            return n >= 0 && n < 6 ? n : -1;
+        }
+        switch (token.toLowerCase()) {
+            case "down":
+                return 0;
+            case "up":
+                return 1;
+            case "north":
+                return 2;
+            case "south":
+                return 3;
+            case "west":
+                return 4;
+            case "east":
+                return 5;
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Expand the metadata filter into individual values; numeric ranges
+     * ("0-3") are expanded, non-numeric tokens are ignored.
+     */
+    private static int[] parseMetadatas(List<String> metadatas) {
+        List<Integer> out = new ArrayList<>();
+        for (String token : metadatas) {
+            int dash = token.indexOf('-');
+            if (dash > 0) {
+                String lo = token.substring(0, dash).trim();
+                String hi = token.substring(dash + 1).trim();
+                if (isInteger(lo) && isInteger(hi)) {
+                    int a = Integer.parseInt(lo);
+                    int b = Integer.parseInt(hi);
+                    if (a <= b && b - a < 256) {
+                        for (int i = a; i <= b; i++) {
+                            out.add(i);
+                        }
+                        continue;
+                    }
+                }
+            }
+            if (isInteger(token)) {
+                out.add(Integer.parseInt(token));
+            }
+        }
+        int[] values = new int[out.size()];
+        for (int i = 0; i < out.size(); i++) {
+            values[i] = out.get(i);
+        }
+        return values;
     }
 
     /** Minimum tile count required by each supported method; -1 = unsupported method. */
