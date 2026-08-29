@@ -9,7 +9,6 @@ import decok.dfcdvadstf.catframe.compact.ItemPhysic;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.shared.CtmRenderExtension;
 import decok.dfcdvadstf.catframe.compact.tags.PineTags;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
-import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +29,7 @@ public class CatFrameCompact {
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         config = new Config(event.getSuggestedConfigurationFile());
+        logger = event.getModLog();
         // Master switch for the ItemPhysic compatibility layer: when disabled,
         // all detection, crash rejection and rotation injection are bypassed.
         // Master switch for the PineappleTags compatibility layer: when disabled,
@@ -51,9 +51,6 @@ public class CatFrameCompact {
                     + "Please remove ItemPhysic, or switch to the kotmatross Mixin rewrite "
                     + "(ItemPhysic-Unofficial, modrinth: itemphysic-1.7.10-unofficial).");
         }
-        if (CompactBase.isMCPatcherForgeInstalled()) throw new RuntimeException(
-                "CatFrame "
-        );
         if (ItemPhysic.isMixinInstalled()) {
             logger.info("ItemPhysic (Mixin rewrite) detected - enabling drop animation compatibility.");
         }
@@ -65,8 +62,8 @@ public class CatFrameCompact {
                 && (CompactBase.isOptiFutureInstalled()
                 || CompactBase.isAngelicaInstalled()
                 || CompactBase.isNotFineInstalled())) {
-            ModelRenderExtensions.register(new CtmRenderExtension());
             logger.info("MCPF-heritage CTM bridge enabled (OptiFuture/Angelica/NotFine detected).");
+            ModelRenderExtensions.register(CtmRenderExtension.INSTANCE);
         }
     }
 

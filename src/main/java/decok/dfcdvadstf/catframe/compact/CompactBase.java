@@ -15,6 +15,7 @@ public class CompactBase {
 
     // MCPatcher Format + OptiFine-like mod compact
 
+    @Deprecated
     public static boolean isMCPatcherForgeInstalled() {
         // Sorry This mod is used to have a support, but now after a rethink,
         // I started to not provide it for such a mod that discontinued for 2 years, which contained 8 parameters, while one of it was called zero times.
