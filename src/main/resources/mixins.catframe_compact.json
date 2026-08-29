@@ -4,6 +4,6 @@
   "refmap": "mixins.catframe_compact.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "mixins": [],
-  "client": ["MixinTextureMap"],
+  "client": [],
   "server": []
 }

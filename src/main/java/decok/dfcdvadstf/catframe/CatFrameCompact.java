@@ -6,7 +6,6 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.ItemPhysic;
-import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CtmManager;
 import decok.dfcdvadstf.catframe.compact.tags.PineTags;
 import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.LogManager;
@@ -52,12 +51,6 @@ public class CatFrameCompact {
         }
         if (ItemPhysic.isMixinInstalled()) {
             logger.info("ItemPhysic (Mixin rewrite) detected - enabling drop animation compatibility.");
-        }
-
-        // CTM compatibility layer: MCPatcher/OptiFine-format connected textures
-        // on the CatFrame render pipeline. Client-only (render extension chain).
-        if (event.getSide().isClient()) {
-            CtmManager.init();
         }
     }
 
