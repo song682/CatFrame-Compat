@@ -45,9 +45,6 @@ public class CtmRenderExtension implements IModelRenderExtension {
 
     public static IIcon getBlockIcon(IIcon icon, Block block,
                                      IBlockAccess blockAccess, int i, int j, int k, int face) {
-        if (icon != null && (CompactBase.isOptiFutureInstalled() || CompactBase.isAngelicaInstalled() || CompactBase.isNotFineInstalled())) {
-            return CTMUtils.getBlockIcon(icon, block, blockAccess, i, j, k, face);
-        }
-        return null;
+        return CTMUtils.getBlockIcon(icon, block, blockAccess, i, j, k, face);
     }
 }

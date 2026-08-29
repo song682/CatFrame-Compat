@@ -112,7 +112,6 @@ dependencies {
     implementation fileTree(dir: 'lib', includes: ['*.jar'],
             excludes: [
                     'IngameIME-1.7.10-2.0.10-dev.jar',
-                    'mcpatcherforge-1.0.0-alpha-dev.jar',
                     'angelica-2.2.8-dev.jar'
             ]
     )
