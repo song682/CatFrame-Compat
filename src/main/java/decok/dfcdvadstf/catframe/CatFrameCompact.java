@@ -6,7 +6,9 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.ItemPhysic;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.shared.CtmRenderExtension;
 import decok.dfcdvadstf.catframe.compact.tags.PineTags;
+import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,8 +51,22 @@ public class CatFrameCompact {
                     + "Please remove ItemPhysic, or switch to the kotmatross Mixin rewrite "
                     + "(ItemPhysic-Unofficial, modrinth: itemphysic-1.7.10-unofficial).");
         }
+        if (CompactBase.isMCPatcherForgeInstalled()) throw new RuntimeException(
+                "CatFrame "
+        );
         if (ItemPhysic.isMixinInstalled()) {
             logger.info("ItemPhysic (Mixin rewrite) detected - enabling drop animation compatibility.");
+        }
+
+        // MCPF-heritage CTM bridge: route connected-texture selection to the
+        // installed mod's CTMUtils (7-parameter family: OptiFuture/Angelica/NotFine).
+        // The legacy 8-parameter MCPatcherForge signature is not supported.
+        if (event.getSide().isClient()
+                && (CompactBase.isOptiFutureInstalled()
+                || CompactBase.isAngelicaInstalled()
+                || CompactBase.isNotFineInstalled())) {
+            ModelRenderExtensions.register(new CtmRenderExtension());
+            logger.info("MCPF-heritage CTM bridge enabled (OptiFuture/Angelica/NotFine detected).");
         }
     }
 
