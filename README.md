@@ -10,5 +10,24 @@ The mod compatibility layer for CatFrame, also provide some useful tools for mod
 
 ## 2. MCPatcher Compact
 
-- MCPatcherForge series (Except MCPatcherForge), e.g., NotFine, angelica, optifuture: Suppport CTM methods to let it working on the json-modelized blocks.
-- MCPatcherForge (optifutrue <= 1.2.3): hence have 8 paramaters
+- MCPatcherForge series (Except MCPatcherForge), e.g., NotFine, Angelica, OptiFuture: Support CTM methods to let it working on the json-modelized blocks.
+- MCPatcherForge (OptiFutrue <= 1.2.3): hence have 8 parameter and one useless parameter is cannot be removed, so this mod support is currently unavailable.
+- Right Proper MCPatcher: Developing... Comming soon....
+
+## 3. Tag compact:
+
+- PineappleTags: For the tags is can be registered and used by CatFrame
+- HogUtils (HogTags): Developing...
+
+## 4. Model for physics
+
+- Item Physic:    
+  (Official version) is not available and protentially causing a short in my item transformation, and cannot avoid hence the asm short is fully short which means hard to retrieve, so this version will cause a crash.    
+  (Unofficial version) is fully tested and the rotation and spin will be fully applied by mixin. 
+- FloatingItems: Developing...
+
+# Tools
+## Model
+
+- ModelBound:
+  Bound tint: Derives block bounds from CatFrame JSON block models.
