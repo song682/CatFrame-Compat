@@ -4,7 +4,9 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.ItemPhysic;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CtmManager;
 import decok.dfcdvadstf.catframe.compact.tags.PineTags;
 import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.LogManager;
@@ -20,22 +22,18 @@ import java.io.File;
         dependencies = "required-after:catframe@[0.6.7,);required-after:jarutils@[0.0.2,);after:ingameime;after:pineapple_tag"
 )
 public class CatFrameCompact {
+
     public static Logger logger = LogManager.getLogger(Tags.NAME);
 
+    public static Config config;
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        config = new Config(event.getSuggestedConfigurationFile());
         // Master switch for the ItemPhysic compatibility layer: when disabled,
         // all detection, crash rejection and rotation injection are bypassed.
-        Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-        boolean itemPhysicCompat = config.getBoolean("enableItemPhysicCompat", Configuration.CATEGORY_GENERAL, false, "Enable the ItemPhysic compatibility layer: detection, rejection of the official ASM coremod, and drop-rotation injection for the Mixin rewrite. Set to false to bypass all ItemPhysic handling.");
         // Master switch for the PineappleTags compatibility layer: when disabled,
         // tag-pool synchronization and tag queries are bypassed entirely.
-        boolean pineTagsCompat = config.getBoolean("enablePineTagsCompat", Configuration.CATEGORY_GENERAL, true, "Enable the PineappleTags compatibility layer: converts PineappleTags' runtime tag pool into CatFrame tags at post-init so CatFrame tag queries and item detection cover PineappleTags content. Set to false to disable the integration.");
-        if (config.hasChanged()) {
-            config.save();
-        }
-        ItemPhysic.setEnabled(itemPhysicCompat);
-        PineTags.setEnabled(pineTagsCompat);
+        ItemPhysic.setEnabled(config.itemPhysicCompat);
 
         // The mods directory sits next to the config directory; this also holds in dev.
         ItemPhysic.scan(new File(event.getModConfigurationDirectory().getParentFile(), "mods"));
@@ -55,6 +53,12 @@ public class CatFrameCompact {
         if (ItemPhysic.isMixinInstalled()) {
             logger.info("ItemPhysic (Mixin rewrite) detected - enabling drop animation compatibility.");
         }
+
+        // CTM compatibility layer: MCPatcher/OptiFine-format connected textures
+        // on the CatFrame render pipeline. Client-only (render extension chain).
+        if (event.getSide().isClient()) {
+            CtmManager.init();
+        }
     }
 
     @EventHandler
@@ -63,7 +67,7 @@ public class CatFrameCompact {
         // are done by consumer mods, and post-init is the first safe point where
         // the tag pool is (almost) complete. Re-call PineTags.syncTags() manually
         // if a mod registers pineapple tags even later.
-        if (PineTags.isEnabled()) {
+        if (CompactBase.isWolfTagInstalled()) {
             int synced = PineTags.syncTags();
             if (synced > 0) {
                 logger.info("PineappleTags compatibility: synced {} tag entries into the CatFrame tag system.", synced);
