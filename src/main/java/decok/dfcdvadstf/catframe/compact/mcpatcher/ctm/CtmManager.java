@@ -59,6 +59,9 @@ public final class CtmManager implements IResourceManagerReloadListener {
             return;
         }
         ModelRenderRegistry.register(new CtmRenderExtension());
+        // Atlas stitch hook: registers CTM tile placeholders (Pre) and
+        // collects the stitched IIcons (Post) on the block atlas.
+        MinecraftForge.EVENT_BUS.register(new CtmTextureStitch());
         registerReloadListener();
     }
 
