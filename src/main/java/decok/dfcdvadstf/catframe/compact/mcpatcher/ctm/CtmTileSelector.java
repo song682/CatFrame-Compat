@@ -10,6 +10,7 @@ import decok.dfcdvadstf.catframe.model.state.BlockStateModelPart;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockPane;
+import net.minecraft.block.BlockRotatedPillar;
 import net.minecraft.block.BlockWall;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
@@ -35,9 +36,17 @@ import java.util.List;
  * (rebuilt per stitch, read-only afterwards), so parallel chunk compilation
  * may call it freely. It allocates nothing per quad.
  * <p>
- * Scope: only {@code method=ctm} is selected here; the other methods
- * (horizontal/vertical/random/...) land in a later stage and fall through
- * to the vanilla texture.
+ * Scope: methods ctm, horizontal, vertical, top, random, repeat and fixed
+ * are selected here (P4); horizontal+vertical / vertical+horizontal and
+ * the overlay variants land in a later stage and fall through to the
+ * vanilla texture.
+ * <p>
+ * P4 (method expansion): the rule filters follow OptiFine 1.17.1
+ * getConnectedTexture order (metadata, axis-corrected faces, heights,
+ * biomes); random/repeat/fixed need no neighbour probes, horizontal /
+ * vertical / top probe through the same {@link #isNeighbour} chain, and
+ * the pillar axis (for {@link BlockRotatedPillar} blocks) is decoded from
+ * the 1.7.10 metadata bits.
  * <p>
  * P3 (pane specialisation):
  * <ul>
@@ -101,23 +110,369 @@ public final class CtmTileSelector {
         return null;
     }
 
-    /** Apply one rule: filters, pane skip, 47-layout selection, placeholder lookup. */
+    /**
+     * Apply one rule: filters (metadata, axis-corrected faces, heights,
+     * biomes), pane skip, method dispatch, placeholder lookup.
+     */
     @Nullable
     private static IIcon tryRule(CtmRuleSet rules, int ruleIndex, IBlockAccess world,
                                  int x, int y, int z, Block block, int meta,
                                  Direction side, String baseKey, BakedQuad quad) {
         CtmProperties rule = rules.rules().get(ruleIndex);
-        if (!"ctm".equals(rule.method)) {
-            return null; // other methods are handled by a later stage
+        if (!rule.matchesMetadata(meta)) {
+            return null;
         }
-        if (!rule.matchesMetadata(meta) || !rule.matchesFace(side.ordinal())) {
+        int vertAxis = pillarAxis(block, meta);
+        if (!rule.matchesFace(side.ordinal(), vertAxis)) {
+            return null;
+        }
+        if (!rule.matchesHeight(y)) {
+            return null;
+        }
+        if (!rule.matchesBiome(world, x, z)) {
             return null;
         }
         if (skipPaneQuad(block, quad, world, x, y, z, side)) {
             return null; // pane bars/post keep their edge texture (OptiFine skipConnectedTexture)
         }
-        int tileIndex = connectedTile(rule, world, x, y, z, side, block, meta, baseKey);
+        int tileIndex = tileIndex(rule, world, x, y, z, side, block, meta, baseKey, vertAxis);
+        if (tileIndex < 0) {
+            return null; // method yields no tile for this quad (e.g. top on a cap face)
+        }
         return CtmTileRegistry.getIcon(CtmTileRegistry.PREFIX + "r" + ruleIndex + "/" + tileIndex);
+    }
+
+    /**
+     * Dispatch to the tile selector of the rule's method (OptiFine 1.17.1
+     * getConnectedTexture switch): ctm 47-grid, horizontal/vertical edge
+     * mapping, top cap, random seeding, repeat tiling, fixed. Returns -1
+     * when the method yields no tile for this quad (vanilla texture kept).
+     */
+    private static int tileIndex(CtmProperties rule, IBlockAccess world,
+                                 int x, int y, int z, Direction side,
+                                 Block block, int meta, String baseKey, int vertAxis) {
+        switch (rule.method) {
+            case "ctm":
+                return connectedTile(rule, world, x, y, z, side, block, meta, baseKey);
+            case "horizontal":
+                return horizontalTile(rule, world, x, y, z, side, block, meta, baseKey, vertAxis);
+            case "vertical":
+                return verticalTile(rule, world, x, y, z, side, block, meta, baseKey, vertAxis);
+            case "top":
+                return topTile(rule, world, x, y, z, side, block, meta, baseKey, vertAxis);
+            case "random":
+                return randomTile(rule, world, x, y, z, side, block);
+            case "repeat":
+                return repeatTile(rule, x, y, z, side);
+            case "fixed":
+                return 0;
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Horizontal edge mapping (OptiFine getConnectedTextureHorizontal): probe
+     * the two neighbours in the plane perpendicular to the pillar axis and
+     * map to {3 = none, 2 = left, 0 = right, 1 = both}.
+     */
+    private static int horizontalTile(CtmProperties rule, IBlockAccess world,
+                                      int x, int y, int z, Direction side,
+                                      Block block, int meta, String baseKey, int vertAxis) {
+        boolean flag;
+        boolean flag1;
+        switch (vertAxis) {
+            case 1: // Z axis
+                switch (side.ordinal()) {
+                    case 0:
+                        flag = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                        break;
+                    case 1:
+                        flag = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                        break;
+                    case 2:
+                        flag = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                        break;
+                    case 3:
+                        flag = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                        break;
+                    case 4:
+                        flag = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                        break;
+                    default:
+                        flag = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                        break;
+                }
+                break;
+            case 2: // X axis
+                switch (side.ordinal()) {
+                    case 0:
+                        flag = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                        break;
+                    case 1:
+                        flag = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                        break;
+                    case 2:
+                        flag = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                        break;
+                    case 3:
+                        flag = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                        break;
+                    case 4:
+                        flag = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                        break;
+                    default:
+                        flag = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                        break;
+                }
+                break;
+            default: // Y axis
+                switch (side.ordinal()) {
+                    case 0:
+                        flag = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                        break;
+                    case 1:
+                        flag = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                        break;
+                    case 2:
+                        flag = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                        break;
+                    case 3:
+                        flag = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                        break;
+                    case 4:
+                        flag = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                        break;
+                    default:
+                        flag = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                        flag1 = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                        break;
+                }
+                break;
+        }
+        return flag ? (flag1 ? 1 : 2) : (flag1 ? 0 : 3);
+    }
+
+    /**
+     * Vertical edge mapping (OptiFine getConnectedTextureVertical): probe the
+     * two neighbours along the pillar axis and map to
+     * {3 = none, 2 = left, 0 = right, 1 = both}.
+     */
+    private static int verticalTile(CtmProperties rule, IBlockAccess world,
+                                    int x, int y, int z, Direction side,
+                                    Block block, int meta, String baseKey, int vertAxis) {
+        boolean flag;
+        boolean flag1;
+        switch (vertAxis) {
+            case 1: // Z axis
+                if (side == Direction.SOUTH) {
+                    flag = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                } else if (side == Direction.NORTH) {
+                    flag = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                } else {
+                    flag = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                }
+                break;
+            case 2: // X axis
+                if (side == Direction.EAST) {
+                    flag = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                } else if (side == Direction.WEST) {
+                    flag = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                } else {
+                    flag = isNeighbour(rule, world, x - 1, y, z, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                }
+                break;
+            default: // Y axis
+                if (side == Direction.UP) {
+                    flag = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                } else if (side == Direction.DOWN) {
+                    flag = isNeighbour(rule, world, x, y, z - 1, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                } else {
+                    flag = isNeighbour(rule, world, x, y - 1, z, side, block, meta, baseKey);
+                    flag1 = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                }
+                break;
+        }
+        return flag ? (flag1 ? 1 : 2) : (flag1 ? 0 : 3);
+    }
+
+    /**
+     * Top cap (OptiFine getConnectedTextureTop): tile 0 when the block above
+     * (or along the pillar axis) is connected, -1 (no tile) on the cap faces
+     * and when nothing is connected.
+     */
+    private static int topTile(CtmProperties rule, IBlockAccess world,
+                               int x, int y, int z, Direction side,
+                               Block block, int meta, String baseKey, int vertAxis) {
+        boolean flag;
+        switch (vertAxis) {
+            case 1: // Z axis
+                if (side == Direction.SOUTH || side == Direction.NORTH) {
+                    return -1;
+                }
+                flag = isNeighbour(rule, world, x, y, z + 1, side, block, meta, baseKey);
+                break;
+            case 2: // X axis
+                if (side == Direction.EAST || side == Direction.WEST) {
+                    return -1;
+                }
+                flag = isNeighbour(rule, world, x + 1, y, z, side, block, meta, baseKey);
+                break;
+            default: // Y axis
+                if (side == Direction.UP || side == Direction.DOWN) {
+                    return -1;
+                }
+                flag = isNeighbour(rule, world, x, y + 1, z, side, block, meta, baseKey);
+                break;
+        }
+        return flag ? 0 : -1;
+    }
+
+    /**
+     * Random tile (OptiFine getConnectedTextureRandom): position hash seeded
+     * per symmetry face group, optionally chained down the linked column and
+     * re-hashed randomLoops times; weights pick the tile via prefix sums.
+     */
+    private static int randomTile(CtmProperties rule, IBlockAccess world,
+                                  int x, int y, int z, Direction side, Block block) {
+        if (rule.tiles.size() == 1) {
+            return 0;
+        }
+        CtmProperties.MethodProps mp = rule.methodProps;
+        int faceGroup = side.ordinal() / mp.symmetry * mp.symmetry;
+        int bx = x;
+        int by = y;
+        int bz = z;
+        if (mp.linked) {
+            while (by > 0 && world.getBlock(bx, by - 1, bz) == block) {
+                by--;
+            }
+        }
+        int l = getRandom(bx, by, bz, faceGroup) & Integer.MAX_VALUE;
+        for (int i = 0; i < mp.randomLoops; i++) {
+            l = intHash(l);
+        }
+        if (mp.weights == null) {
+            return l % rule.tiles.size();
+        }
+        int j = l % mp.sumAllWeights;
+        for (int i = 0; i < mp.sumWeights.length; i++) {
+            if (j < mp.sumWeights[i]) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Tiling repeat (OptiFine getConnectedTextureRepeat): project the block
+     * position onto the face plane via the per-side coordinate table, then
+     * index the width x height grid (negative coordinates wrap).
+     */
+    private static int repeatTile(CtmProperties rule, int x, int y, int z, Direction side) {
+        if (rule.tiles.size() == 1) {
+            return 0;
+        }
+        int l;
+        int i1;
+        switch (side.ordinal()) {
+            case 0:
+                l = x;
+                i1 = -z - 1;
+                break;
+            case 1:
+                l = x;
+                i1 = z;
+                break;
+            case 2:
+                l = -x - 1;
+                i1 = -y;
+                break;
+            case 3:
+                l = x;
+                i1 = -y;
+                break;
+            case 4:
+                l = z;
+                i1 = -y;
+                break;
+            default:
+                l = -z - 1;
+                i1 = -y;
+                break;
+        }
+        int width = rule.methodProps.width;
+        int height = rule.methodProps.height;
+        l %= width;
+        i1 %= height;
+        if (l < 0) {
+            l += width;
+        }
+        if (i1 < 0) {
+            i1 += height;
+        }
+        return i1 * width + l;
+    }
+
+    /**
+     * Pillar axis of the block (OptiFine getPillarAxis): 0 = Y, 1 = Z,
+     * 2 = X. Only {@link BlockRotatedPillar} blocks rotate; 1.7.10 encodes
+     * the axis in metadata bits 2-3 (4 = X, 8 = Z, 0 = Y).
+     */
+    private static int pillarAxis(Block block, int meta) {
+        if (!(block instanceof BlockRotatedPillar)) {
+            return 0;
+        }
+        switch (meta & 12) {
+            case 4:
+                return 2;
+            case 8:
+                return 1;
+            default:
+                return 0;
+        }
+    }
+
+    /** OptiFine Config.intHash. */
+    private static int intHash(int x) {
+        x = x ^ 61 ^ x >> 16;
+        x = x + (x << 3);
+        x = x ^ x >> 4;
+        x = x * 668265261;
+        return x ^ x >> 15;
+    }
+
+    /** OptiFine Config.getRandom: position hash chain seeded per face. */
+    private static int getRandom(int x, int y, int z, int face) {
+        int i = intHash(face + 37);
+        i = intHash(i + x);
+        i = intHash(i + z);
+        return intHash(i + y);
     }
 
     /**

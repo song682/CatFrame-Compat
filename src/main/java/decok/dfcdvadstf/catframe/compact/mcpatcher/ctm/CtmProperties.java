@@ -3,6 +3,8 @@ package decok.dfcdvadstf.catframe.compact.mcpatcher.ctm;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
+import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.biome.BiomeGenBase;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,12 +65,15 @@ public final class CtmProperties {
     public final boolean valid;
     /** Human-readable reason when {@link #valid} is false. */
     public final String invalidReason;
+    /** Method-specific properties (repeat grid, random seeding, filters). */
+    public final MethodProps methodProps;
 
     private CtmProperties(String name, String basePath, String packPath,
                           List<String> matchBlocks, List<String> matchTiles,
                           String method, List<String> tiles, String connect,
                           String faces, List<String> metadatas,
                           int connectType, int facesMask, int[] metadataValues,
+                          MethodProps methodProps,
                           boolean valid, String invalidReason) {
         this.name = name;
         this.basePath = basePath;
@@ -83,8 +88,62 @@ public final class CtmProperties {
         this.connectType = connectType;
         this.facesMask = facesMask;
         this.metadataValues = metadataValues;
+        this.methodProps = methodProps;
         this.valid = valid;
         this.invalidReason = invalidReason;
+    }
+
+    /**
+     * Method-specific properties (P4): repeat grid size, random weights and
+     * seeding, y-height and biome filters. Parsed for every rule with
+     * OptiFine 1.17.1 {@code ConnectedProperties} defaults; only the fields
+     * used by the rule's method are consulted.
+     */
+    static final class MethodProps {
+
+        /** repeat: tile grid width; -1 = unset. */
+        final int width;
+        /** repeat: tile grid height; -1 = unset. */
+        final int height;
+        /** random: per-tile weights, null = uniform distribution. */
+        final int[] weights;
+        /** random: prefix sums over {@link #weights} (normalized to the tile count). */
+        final int[] sumWeights;
+        /** random: total weight, always >= 1. */
+        final int sumAllWeights;
+        /** random: extra hash rounds on the position seed (0-9). */
+        final int randomLoops;
+        /** random: 1 = none, 2 = opposite faces, 6 = all faces (OptiFine parseSymmetry). */
+        final int symmetry;
+        /** random: seed from the bottom of the same-block column below. */
+        final boolean linked;
+        /** y-height filter as flattened [lo, hi] pairs; null = no filter. */
+        final int[] heights;
+        /** biome name filter (normalized); null = no filter. */
+        final String[] biomes;
+        /** true when {@link #biomes} is an exclusion list (leading '!'). */
+        final boolean biomesInvert;
+
+        private MethodProps(int width, int height, int[] weights, int[] sumWeights,
+                            int sumAllWeights, int randomLoops, int symmetry,
+                            boolean linked, int[] heights, String[] biomes,
+                            boolean biomesInvert) {
+            this.width = width;
+            this.height = height;
+            this.weights = weights;
+            this.sumWeights = sumWeights;
+            this.sumAllWeights = sumAllWeights;
+            this.randomLoops = randomLoops;
+            this.symmetry = symmetry;
+            this.linked = linked;
+            this.heights = heights;
+            this.biomes = biomes;
+            this.biomesInvert = biomesInvert;
+        }
+
+        /** Defaults for rules that failed validation (never used for rendering). */
+        static final MethodProps NONE = new MethodProps(-1, -1, null, null, 1,
+                0, 1, false, null, null, false);
     }
 
     /**
@@ -145,32 +204,48 @@ public final class CtmProperties {
         int connectType = parseConnectType(connect, matchBlocks, matchTiles);
         int facesMask = parseFaces(faces);
         int[] metadataValues = parseMetadatas(metadatas);
+        MethodProps methodProps = parseMethodProps(props, tiles);
 
         int minTiles = minTilesFor(method);
         if (minTiles < 0) {
             return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
                     method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
-                    false, "unsupported method '" + method + "'");
+                    methodProps, false, "unsupported method '" + method + "'");
         }
         if (tiles.isEmpty()) {
             return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
                     method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
-                    false, "no tiles specified");
+                    methodProps, false, "no tiles specified");
         }
         if (tiles.size() < minTiles) {
             return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
                     method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
-                    false, "method " + method + " needs at least " + minTiles
+                    methodProps, false, "method " + method + " needs at least " + minTiles
                     + " tiles, got " + tiles.size());
         }
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
             return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
                     method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
-                    false, "no matchBlocks or matchTiles");
+                    methodProps, false, "no matchBlocks or matchTiles");
+        }
+        if ("repeat".equals(method) && (methodProps.width <= 0 || methodProps.height <= 0)) {
+            return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
+                    method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
+                    methodProps, false, "repeat needs positive width and height");
+        }
+        if ("repeat".equals(method) && tiles.size() != methodProps.width * methodProps.height) {
+            return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
+                    method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
+                    methodProps, false, "repeat tile count does not equal width x height");
+        }
+        if ("random".equals(method) && (methodProps.randomLoops < 0 || methodProps.randomLoops > 9)) {
+            return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
+                    method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
+                    methodProps, false, "randomLoops must be between 0 and 9");
         }
         return new CtmProperties(name, basePath, packPath, matchBlocks, matchTiles,
                 method, tiles, connect, faces, metadatas, connectType, facesMask, metadataValues,
-                true, null);
+                methodProps, true, null);
     }
 
     /**
@@ -191,10 +266,93 @@ public final class CtmProperties {
 
     /**
      * True when the given face (Direction ordinal 0-5) passes the faces
-     * filter (-1 = all faces).
+     * filter (-1 = all faces). The side is remapped through the pillar axis
+     * first (OptiFine fixSideByAxis), so faces written for Y-axis blocks
+     * also apply to X/Z-axis pillars.
      */
-    public boolean matchesFace(int side) {
-        return facesMask < 0 || ((1 << side) & facesMask) != 0;
+    public boolean matchesFace(int side, int vertAxis) {
+        if (facesMask < 0) {
+            return true;
+        }
+        if (vertAxis != 0) {
+            side = fixSideByAxis(side, vertAxis);
+        }
+        return ((1 << side) & facesMask) != 0;
+    }
+
+    /** Remap a face ordinal onto a rotated pillar axis (OptiFine fixSideByAxis). */
+    private static int fixSideByAxis(int side, int vertAxis) {
+        switch (vertAxis) {
+            case 1:
+                switch (side) {
+                    case 0:
+                        return 2;
+                    case 1:
+                        return 3;
+                    case 2:
+                        return 1;
+                    case 3:
+                        return 0;
+                    default:
+                        return side;
+                }
+            case 2:
+                switch (side) {
+                    case 0:
+                        return 4;
+                    case 1:
+                        return 5;
+                    case 4:
+                        return 1;
+                    case 5:
+                        return 0;
+                    default:
+                        return side;
+                }
+            default:
+                return side;
+        }
+    }
+
+    /**
+     * True when the block y passes the heights filter (flattened [lo, hi]
+     * pairs; null = no filter).
+     */
+    public boolean matchesHeight(int y) {
+        int[] heights = methodProps.heights;
+        if (heights == null) {
+            return true;
+        }
+        for (int i = 0; i < heights.length; i += 2) {
+            if (y >= heights[i] && y <= heights[i + 1]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * True when the biome at (x, z) passes the biomes filter (normalized
+     * names; null = no filter). A leading '!' in the property makes the
+     * list an exclusion list (OptiFine parseBiomes semantics).
+     */
+    public boolean matchesBiome(IBlockAccess world, int x, int z) {
+        String[] biomes = methodProps.biomes;
+        if (biomes == null) {
+            return true;
+        }
+        BiomeGenBase biome = world.getBiomeGenForCoords(x, z);
+        String name = biome == null ? null : normalizeBiomeName(biome.biomeName);
+        boolean found = false;
+        if (name != null) {
+            for (String b : biomes) {
+                if (b.equals(name)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        return methodProps.biomesInvert != found;
     }
 
     /**
@@ -415,5 +573,254 @@ public final class CtmProperties {
             }
         }
         return true;
+    }
+
+    /**
+     * Parse the method-specific properties (P4), with OptiFine 1.17.1
+     * {@code ConnectedProperties} defaults: repeat width/height, random
+     * weights (normalized to the tile count), randomLoops, symmetry, linked,
+     * heights (with minHeight/maxHeight fallback) and biomes.
+     */
+    private static MethodProps parseMethodProps(Properties props, List<String> tiles) {
+        int width = parseInt(props.getProperty("width"), -1);
+        int height = parseInt(props.getProperty("height"), -1);
+        int[] weights = parseIntList(props.getProperty("weights"));
+        int[] sumWeights = null;
+        int sumAllWeights = 1;
+        if (weights != null) {
+            if (weights.length > tiles.size()) {
+                int[] trimmed = new int[tiles.size()];
+                System.arraycopy(weights, 0, trimmed, 0, trimmed.length);
+                weights = trimmed;
+            } else if (weights.length < tiles.size()) {
+                int[] expanded = new int[tiles.size()];
+                System.arraycopy(weights, 0, expanded, 0, weights.length);
+                int avg = average(weights);
+                for (int i = weights.length; i < expanded.length; i++) {
+                    expanded[i] = avg;
+                }
+                weights = expanded;
+            }
+            sumWeights = new int[weights.length];
+            int total = 0;
+            for (int i = 0; i < weights.length; i++) {
+                total += weights[i];
+                sumWeights[i] = total;
+            }
+            sumAllWeights = total > 0 ? total : 1;
+        }
+        int randomLoops = parseInt(props.getProperty("randomLoops"), 0);
+        int symmetry = parseSymmetry(props.getProperty("symmetry"));
+        boolean linked = parseBoolean(props.getProperty("linked"), false);
+        int[] heights = parseHeights(props);
+
+        String biomesRaw = props.getProperty("biomes");
+        String[] biomes = null;
+        boolean biomesInvert = false;
+        if (biomesRaw != null) {
+            String s = biomesRaw.trim();
+            biomesInvert = s.startsWith("!");
+            if (biomesInvert) {
+                s = s.substring(1);
+            }
+            List<String> list = new ArrayList<>();
+            for (String token : splitList(s)) {
+                String name = resolveBiomeName(token);
+                if (name != null) {
+                    list.add(name);
+                }
+            }
+            biomes = list.toArray(new String[list.size()]);
+        }
+        return new MethodProps(width, height, weights, sumWeights, sumAllWeights,
+                randomLoops, symmetry, linked, heights, biomes, biomesInvert);
+    }
+
+    /** Integer property with a default (OptiFine ConnectedParser.parseInt). */
+    private static int parseInt(String raw, int def) {
+        if (raw == null) {
+            return def;
+        }
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException e) {
+            return def;
+        }
+    }
+
+    /** Boolean property with a default (OptiFine ConnectedParser.parseBoolean). */
+    private static boolean parseBoolean(String raw, boolean def) {
+        if (raw == null) {
+            return def;
+        }
+        String s = raw.trim().toLowerCase();
+        if (s.equals("true") || s.equals("on") || s.equals("yes")) {
+            return true;
+        }
+        if (s.equals("false") || s.equals("off") || s.equals("no")) {
+            return false;
+        }
+        return def;
+    }
+
+    /** OptiFine parseSymmetry: opposite = 2, all = 6, unknown = 1. */
+    private static int parseSymmetry(String raw) {
+        if (raw == null) {
+            return 1;
+        }
+        String s = raw.trim();
+        if (s.equals("opposite")) {
+            return 2;
+        }
+        if (s.equals("all")) {
+            return 6;
+        }
+        return 1;
+    }
+
+    /**
+     * Numeric list property ("0-3 7") into individual values; null when the
+     * property is absent (OptiFine ConnectedParser.parseIntList).
+     */
+    private static int[] parseIntList(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        List<Integer> out = new ArrayList<>();
+        for (String token : raw.split("[,\\s]+")) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            int dash = token.indexOf('-');
+            if (dash > 0) {
+                String lo = token.substring(0, dash).trim();
+                String hi = token.substring(dash + 1).trim();
+                if (isInteger(lo) && isInteger(hi)) {
+                    int a = Integer.parseInt(lo);
+                    int b = Integer.parseInt(hi);
+                    if (a <= b && b - a < 512) {
+                        for (int i = a; i <= b; i++) {
+                            out.add(i);
+                        }
+                        continue;
+                    }
+                }
+                continue;
+            }
+            if (isInteger(token)) {
+                out.add(Integer.parseInt(token));
+            }
+        }
+        int[] values = new int[out.size()];
+        for (int i = 0; i < out.size(); i++) {
+            values[i] = out.get(i);
+        }
+        return values;
+    }
+
+    /**
+     * Parse the heights filter: the heights list, or the minHeight/maxHeight
+     * fallback (only when either differs from the OptiFine defaults).
+     */
+    private static int[] parseHeights(Properties props) {
+        int[] heights = parseRangeListInt(props.getProperty("heights"));
+        if (heights != null) {
+            return heights;
+        }
+        int min = parseInt(props.getProperty("minHeight"), -1);
+        int max = parseInt(props.getProperty("maxHeight"), 1024);
+        if (min == -1 && max == 1024) {
+            return null;
+        }
+        return new int[] {min, max};
+    }
+
+    /**
+     * Range list property ("0-64 100") into flattened [lo, hi] pairs; null
+     * when absent or when any token is invalid (OptiFine parseRangeListInt).
+     */
+    private static int[] parseRangeListInt(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        List<Integer> out = new ArrayList<>();
+        for (String token : raw.split("[,\\s]+")) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            int[] range = parseRangeInt(token);
+            if (range == null) {
+                return null;
+            }
+            out.add(range[0]);
+            out.add(range[1]);
+        }
+        if (out.isEmpty()) {
+            return null;
+        }
+        int[] values = new int[out.size()];
+        for (int i = 0; i < out.size(); i++) {
+            values[i] = out.get(i);
+        }
+        return values;
+    }
+
+    /** Single range token ("lo-hi" or a plain value) into [lo, hi]; null when invalid. */
+    private static int[] parseRangeInt(String token) {
+        int dash = token.indexOf('-');
+        if (dash > 0) {
+            String lo = token.substring(0, dash).trim();
+            String hi = token.substring(dash + 1).trim();
+            if (isInteger(lo) && isInteger(hi)) {
+                int a = Integer.parseInt(lo);
+                int b = Integer.parseInt(hi);
+                if (a <= b) {
+                    return new int[] {a, b};
+                }
+            }
+            return null;
+        }
+        if (isInteger(token)) {
+            int v = Integer.parseInt(token);
+            return new int[] {v, v};
+        }
+        return null;
+    }
+
+    /**
+     * Resolve a biomes token (biome name or numeric id) to a normalized name;
+     * null when the biome is not registered. The registry is accessed through
+     * the public accessors (biomeList itself is not visible in 1.7.10).
+     */
+    private static String resolveBiomeName(String token) {
+        if (isInteger(token)) {
+            BiomeGenBase biome = BiomeGenBase.getBiome(Integer.parseInt(token));
+            return biome == null ? null : normalizeBiomeName(biome.biomeName);
+        }
+        String norm = normalizeBiomeName(token);
+        for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray()) {
+            if (biome != null && norm.equals(normalizeBiomeName(biome.biomeName))) {
+                return norm;
+            }
+        }
+        return null;
+    }
+
+    /** Lowercase biome name without the "minecraft:" prefix. */
+    private static String normalizeBiomeName(String name) {
+        String s = name == null ? "" : name.trim().toLowerCase();
+        if (s.startsWith("minecraft:")) {
+            s = s.substring("minecraft:".length());
+        }
+        return s;
+    }
+
+    /** Integer average of a non-empty array (OptiFine MathUtils.getAverage). */
+    private static int average(int[] values) {
+        long sum = 0;
+        for (int v : values) {
+            sum += v;
+        }
+        return (int) (sum / values.length);
     }
 }
