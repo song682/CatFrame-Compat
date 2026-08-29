@@ -9,6 +9,7 @@ import decok.dfcdvadstf.catframe.compact.ItemPhysic;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.shared.CtmRenderExtension;
 import decok.dfcdvadstf.catframe.compact.tags.PineTags;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
+import io.qzz.dfdvdsf.jarfile.ModVersions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,6 +27,8 @@ public class CatFrameCompact {
     public static Logger logger = LogManager.getLogger(Tags.NAME);
 
     public static Config config;
+    public static final String OPTIFUTURE_MIN_VER = "1.2.3";
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         config = new Config(event.getSuggestedConfigurationFile());
@@ -59,9 +62,9 @@ public class CatFrameCompact {
         // installed mod's CTMUtils (7-parameter family: OptiFuture/Angelica/NotFine).
         // The legacy 8-parameter MCPatcherForge signature is not supported.
         if (event.getSide().isClient()
+                && (CompactBase.isOptiFutureInstalled() || CompactBase.isAngelicaInstalled() || CompactBase.isNotFineInstalled())
                 && (CompactBase.isOptiFutureInstalled()
-                || CompactBase.isAngelicaInstalled()
-                || CompactBase.isNotFineInstalled())) {
+                && ModVersions.versionMatches("OptiFuture","optifutrue", "<=" + OPTIFUTURE_MIN_VER))) {
             logger.info("MCPF-heritage CTM bridge enabled (OptiFuture/Angelica/NotFine detected).");
             ModelRenderExtensions.register(CtmRenderExtension.INSTANCE);
         }
