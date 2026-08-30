@@ -12,8 +12,7 @@ The mod compatibility layer for CatFrame, also provide some useful tools for mod
 
 - MCPatcherForge series (Except MCPatcherForge), e.g., NotFine, Angelica, OptiFuture: Support CTM methods to let it working on the json-modelized blocks.
 - MCPatcherForge (OptiFutrue <= 1.2.3): Because have 8 parameter and one useless parameter is cannot be removed, so this mod support is currently unavailable.
-- Right Proper MCPatcher: Developing... Comming soon....
-
+- Right Proper MCPatcher: Support CTM methods to let it working on the json-modelized blocks.
 ## 3. Tag compat:
 
 - PineappleTags: For the tags is can be registered and used by CatFrame
