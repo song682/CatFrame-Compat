@@ -1,7 +1,7 @@
 package decok.dfcdvadstf.catframe.compact.physic;
 
 import decok.dfcdvadstf.catframe.compact.CompactBase;
-import decok.dfcdvadstf.catframe.mixin.late.MixinRenderJsonItemModel;
+import decok.dfcdvadstf.catframe.compact.mixin.late.MixinRenderJsonItemModel;
 import io.qzz.dfdvdsf.jarfile.JarContents;
 import io.qzz.dfdvdsf.jarfile.JarNames;
 import io.qzz.dfdvdsf.jarfile.JarVersionGuesser;

@@ -5,7 +5,6 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
 import decok.dfcdvadstf.catframe.compact.proxy.CommonProxy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,26 +33,11 @@ public class CatFrameCompat {
         config = new CompatConfig(event.getSuggestedConfigurationFile());
         logger = event.getModLog();
 
-
-        // Reject the official ASM-coremod ItemPhysic: it wholesale-replaces
-        // RenderItem.doRender and unconditionally short-circuits ForgeHooksClient,
-        // which is mutually exclusive with CatFrame's IItemRenderer takeover.
-        // The kotmatross Mixin rewrite yields to third-party renderers and coexists.
-        if (ItemPhysic.isOfficialInstalled()) {
-            throw new RuntimeException(
-                    "CatFrame is incompatible with the official ItemPhysic (ASM coremod): "
-                    + "it fully replaces RenderItem.doRender and short-circuits ForgeHooksClient, "
-                    + "conflicting with CatFrame's item renderer. "
-                    + "Please remove ItemPhysic, or switch to the kotmatross Mixin rewrite "
-                    + "(ItemPhysic-Unofficial, modrinth: itemphysic-1.7.10-unofficial).");
-        }
-        if (ItemPhysic.isMixinInstalled()) {
-            logger.info("ItemPhysic (Mixin rewrite) detected - enabling drop animation compatibility.");
-        }
+        proxy.preInit(event);
     }
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-
+        proxy.postInit(event);
     }
 }

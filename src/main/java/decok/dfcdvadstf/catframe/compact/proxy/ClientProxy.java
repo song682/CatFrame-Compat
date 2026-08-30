@@ -20,9 +20,11 @@ public class ClientProxy extends CommonProxy {
         // MCPF-heritage CTM bridge: route connected-texture selection to the
         // installed mod's CTMUtils (7-parameter family: OptiFuture/Angelica/NotFine).
         // The legacy 8-parameter MCPatcherForge signature is not supported.
-        if (CompactBase.isOptiFutureInstalled() || CompactBase.isAngelicaInstalled() || CompactBase.isNotFineInstalled()
-                && (CompactBase.isOptiFutureInstalled()
-                && ModVersions.versionMatches("OptiFuture","optifutrue", ">=" + OPTIFUTURE_MIN_VER))) {
+        // OptiFuture requires a version whose CTMUtils is 7-parameter (>= MIN_VER);
+        // Angelica and NotFine always expose that family.
+        if ((CompactBase.isOptiFutureInstalled()
+                && ModVersions.versionMatches("OptiFuture", "optifutrue", ">=" + OPTIFUTURE_MIN_VER))
+                || CompactBase.isAngelicaInstalled() || CompactBase.isNotFineInstalled()) {
             logger.info("MCPF-heritage CTM bridge enabled (OptiFuture/Angelica/NotFine detected).");
             ModelRenderExtensions.register(CtmRenderExtension.INSTANCE);
         }
