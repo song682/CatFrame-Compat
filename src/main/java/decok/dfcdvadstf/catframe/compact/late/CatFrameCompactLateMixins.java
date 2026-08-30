@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.compact.mixin;
+package decok.dfcdvadstf.catframe.compact.late;
 
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
@@ -21,6 +21,12 @@ import java.util.Set;
  *
  * <p>Render classes exist only in the client environment; no mixin is
  * registered on the server side.</p>
+ *
+ * <p>This loader class must NOT live inside a package declared by any mixin
+ * config: UniMixins loads it directly during {@code beforeConstructing}, and
+ * the mixin transformer refuses direct references into declared mixin
+ * packages (IllegalClassLoadError). The actual mixin classes stay in
+ * {@code compact.mixin.*}, outside this package.</p>
  */
 @LateMixin
 public class CatFrameCompactLateMixins implements ILateMixinLoader {
