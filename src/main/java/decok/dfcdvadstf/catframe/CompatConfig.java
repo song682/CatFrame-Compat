@@ -4,7 +4,7 @@ import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
 
-public class CompactConfig {
+public class CompatConfig {
 
     public final Configuration config;
     public static boolean itemPhysicCompat;
@@ -13,7 +13,7 @@ public class CompactConfig {
     /** Log loaded CTM rules and unmatched textures / 记录 CTM 规则加载与未命中纹理 */
     public static boolean ctmDebugLog;
 
-    public CompactConfig(File file) {
+    public CompatConfig(File file) {
         config = new Configuration(file);
         config.load();
         loadOptions();

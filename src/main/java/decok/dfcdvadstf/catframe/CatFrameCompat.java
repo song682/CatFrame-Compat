@@ -20,7 +20,7 @@ public class CatFrameCompat {
 
     public static Logger logger = LogManager.getLogger(Tags.NAME);
 
-    public static CompactConfig config;
+    public static CompatConfig config;
 
     @SidedProxy(
             serverSide = "decok.dfcdvadstf.catframe.compact.proxy.CommonProxy",
@@ -31,7 +31,7 @@ public class CatFrameCompat {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        config = new CompactConfig(event.getSuggestedConfigurationFile());
+        config = new CompatConfig(event.getSuggestedConfigurationFile());
         logger = event.getModLog();
 
 
