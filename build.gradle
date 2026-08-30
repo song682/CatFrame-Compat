@@ -119,7 +119,13 @@ dependencies {
 }
 
 def dependenciesList = []
-if (!project.modDependencies.isEmpty()) dependenciesList.add(project.modDependencies)
+if (!project.modDependencies.isEmpty()) {
+    // mcmod.info expects one dependency per array element; the modDependencies
+    // string is ';'-separated, so split it into individual entries.
+    project.modDependencies.replaceAll('"', '').tokenize(';').each { dep ->
+        dependenciesList.add("\"${dep}\"")
+    }
+}
 if (project.enableUsingMysteriumLib.toBoolean()) dependenciesList.add("\"required-after:MysteriumLib\"")
 
 def extractTagsFromJava() {
