@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.ui.animation;
+package decok.dfcdvadstf.catframe.ui.extended.animation;
 
 public interface AnimationInterface {
     float getStart(AnimationInterface animation);

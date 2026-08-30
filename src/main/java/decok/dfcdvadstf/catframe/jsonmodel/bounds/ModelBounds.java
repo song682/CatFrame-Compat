@@ -1,8 +1,8 @@
-package decok.dfcdvadstf.catframe.bounds;
+package decok.dfcdvadstf.catframe.jsonmodel.bounds;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-import decok.dfcdvadstf.catframe.CatFrameCompact;
+import decok.dfcdvadstf.catframe.CatFrameCompat;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.AxisAlignedBB;
@@ -28,8 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * into 0~1 block space and clamps, then binds the result to the block via
  * {@link Block#setBlockBounds}. This provides a capability that high versions
  * no longer have but is often expected: deriving bounds automatically from
- * JSON block models, filling the gap of 1.7.10 lacking the VoxelShape system
- * (collision shapes of every vanilla version are independent hand-written
+ * JSON block models, filling the gap with 1.7.10 lacking the VoxelShape system
+ * (collision shapes of every vanilla version are independent handwritten
  * shape data and have never been generated from render models; this is the
  * bridging facility provided by this mod).
  *
@@ -233,7 +233,7 @@ public final class ModelBounds {
     public static boolean applyFromModel(Block block, String namespace, String modelPath) {
         float[] bounds = computeBounds(namespace, modelPath);
         if (bounds == null) {
-            CatFrameCompact.logger.warn(
+            CatFrameCompat.logger.warn(
                     "[ModelBounds] No valid elements found for model {}:{}, bounds of block {} left unchanged.",
                     namespace, modelPath, Block.blockRegistry.getNameForObject(block));
             return false;
@@ -273,11 +273,11 @@ public final class ModelBounds {
      */
     private static List<Element> collectElements(String qualifiedPath, int depth, Set<String> visiting) {
         if (depth > MAX_DEPTH) {
-            CatFrameCompact.logger.error("[ModelBounds] Model parent chain too deep for: {}", qualifiedPath);
+            CatFrameCompat.logger.error("[ModelBounds] Model parent chain too deep for: {}", qualifiedPath);
             return null;
         }
         if (!visiting.add(qualifiedPath)) {
-            CatFrameCompact.logger.error("[ModelBounds] Circular model dependency detected at: {}", qualifiedPath);
+            CatFrameCompat.logger.error("[ModelBounds] Circular model dependency detected at: {}", qualifiedPath);
             return null;
         }
         try {
@@ -308,7 +308,7 @@ public final class ModelBounds {
 
         InputStream in = ModelBounds.class.getResourceAsStream(resource);
         if (in == null) {
-            CatFrameCompact.logger.warn("[ModelBounds] Model resource not found: {}", resource);
+            CatFrameCompat.logger.warn("[ModelBounds] Model resource not found: {}", resource);
             return null;
         }
         try {
@@ -329,7 +329,7 @@ public final class ModelBounds {
         try {
             return GSON.fromJson(reader, ModelData.class);
         } catch (JsonParseException e) {
-            CatFrameCompact.logger.warn("[ModelBounds] Malformed model JSON: {}", e.getMessage());
+            CatFrameCompat.logger.warn("[ModelBounds] Malformed model JSON: {}", e.getMessage());
             return null;
         }
     }

@@ -1,7 +1,6 @@
-package decok.dfcdvadstf.catframe.compact.mcpatcher.shared;
+package decok.dfcdvadstf.catframe.compact.mcpatcher;
 
 import com.prupe.mcpatcher.ctm.CTMUtils;
-import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.model.render.IModelRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.RenderContext;
 import decok.dfcdvadstf.catframe.model.render.api.RenderPhase;

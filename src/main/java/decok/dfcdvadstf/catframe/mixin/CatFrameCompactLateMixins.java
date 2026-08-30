@@ -3,6 +3,8 @@ package decok.dfcdvadstf.catframe.mixin;
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
+import decok.dfcdvadstf.catframe.compact.ItemPhysic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +36,8 @@ public class CatFrameCompactLateMixins implements ILateMixinLoader {
         List<String> mixins = new ArrayList<>();
         // RenderJsonItemModel is a client-side render class: registering it on
         // a server would leave the injection target missing.
-        if (FMLCommonHandler.instance().getSide().isClient()) {
-            mixins.add("MixinRenderJsonItemModel");
+        if (FMLCommonHandler.instance().getSide().isClient() && ItemPhysic.isMixinInstalled()) {
+            mixins.add("late.MixinRenderJsonItemModel");
         }
         return mixins;
     }

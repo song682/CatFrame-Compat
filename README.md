@@ -23,11 +23,14 @@ The mod compatibility layer for CatFrame, also provide some useful tools for mod
 
 - Item Physic:    
   (Official version) is not available and protentially causing a short in my item transformation, and cannot avoid because the asm short is fully short which means hard to retrieve, so this version will cause a crash.    
-  (Unofficial version) is fully tested and the rotation and spin will be fully applied by mixin. 
+  (Unofficial version) is fully tested and the rotation and spin will be fully applied by Mixin. 
 - FloatingItems: Developing...
 
 # Tools
 ## Model
 
-- ModelBound:
-  Bound tint: Derives block bounds from CatFrame JSON block models.
+- ModelBound: Derives block bounds from CatFrame JSON block models.
+
+# Dependency
+
+CatFrame (Over 0.6.7), JarUtils (over 0.0.2).

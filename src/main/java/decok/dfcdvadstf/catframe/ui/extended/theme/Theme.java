@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.ui.theme;
+package decok.dfcdvadstf.catframe.ui.extended.theme;
 
 import net.minecraft.util.ResourceLocation;
 
