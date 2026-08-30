@@ -3,8 +3,7 @@ package decok.dfcdvadstf.catframe.mixin;
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Loader;
-import decok.dfcdvadstf.catframe.compact.ItemPhysic;
+import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
 
 import java.util.ArrayList;
 import java.util.List;

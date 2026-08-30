@@ -3,6 +3,7 @@ package decok.dfcdvadstf.catframe.compact.proxy;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.CtmRenderExtension;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.RpmcpRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import io.qzz.dfdvdsf.jarfile.ModVersions;
 
@@ -24,6 +25,14 @@ public class ClientProxy extends CommonProxy {
                 && ModVersions.versionMatches("OptiFuture","optifutrue", ">=" + OPTIFUTURE_MIN_VER))) {
             logger.info("MCPF-heritage CTM bridge enabled (OptiFuture/Angelica/NotFine detected).");
             ModelRenderExtensions.register(CtmRenderExtension.INSTANCE);
+        }
+
+        // RPMCP (Right Proper MCPatcher) CTM bridge: separate extension class
+        // (com.falsepattern classes) registered only when the mcpatcher mod is
+        // present, so the class is never loaded without it.
+        if (CompactBase.isRightProperMCPatcherInstalled()) {
+            ModelRenderExtensions.register(RpmcpRenderExtension.INSTANCE);
+            logger.info("RPMCP CTM bridge enabled (Right Proper MCPatcher detected).");
         }
     }
 

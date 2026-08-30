@@ -1,6 +1,6 @@
 package decok.dfcdvadstf.catframe.mixin.late;
 
-import decok.dfcdvadstf.catframe.compact.ItemPhysic;
+import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
 import decok.dfcdvadstf.catframe.model.render.RenderJsonItemModel;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.item.EntityItem;
