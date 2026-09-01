@@ -5,6 +5,7 @@ import decok.dfcdvadstf.catframe.model.render.IModelRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.RenderContext;
 import decok.dfcdvadstf.catframe.model.render.api.RenderPhase;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockPane;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
@@ -35,6 +36,23 @@ public class CtmRenderExtension implements IModelRenderExtension {
         if (base == null) {
             return;
         }
+        // Pane: mirror GlassPaneRenderer's logic (CTMUtils.getMCPF).
+        // GlassPaneRenderer uses block.getIcon(0, meta) as base icon for CTM queries,
+        // matching the RenderBlocks pipeline. We replicate this for consistency.
+        if (ctx.block instanceof BlockPane) {
+            // Use block's side-0 icon as base (matches GlassPaneRenderer.setupIcons L54)
+            IIcon paneBase = ctx.block.getIcon(0, ctx.metadata);
+            if (paneBase == null) {
+                return;
+            }
+            IIcon ctm = getBlockIcon(paneBase, ctx.block, ctx.world,
+                    ctx.x, ctx.y, ctx.z, ctx.quad.face.ordinal());
+            if (ctm != null) {
+                ctx.iconOverride = ctm;
+            }
+            return;
+        }
+        // Non-pane blocks: use quad's icon as base
         IIcon ctm = getBlockIcon(base, ctx.block, ctx.world,
                 ctx.x, ctx.y, ctx.z, ctx.quad.face.ordinal());
         if (ctm != null && ctm != base) {
