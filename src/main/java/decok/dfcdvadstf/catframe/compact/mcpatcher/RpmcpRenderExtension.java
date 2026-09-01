@@ -45,17 +45,23 @@ public class RpmcpRenderExtension implements IModelRenderExtension {
         if (base == null) {
             return;
         }
-        // Pane: use PaneRenderHelper's connection logic (BlockPane.canPaneConnectToBlock)
-        // instead of CTMEngine's generic neighbor query. Pane connection state is based
-        // on blockstate (north/east/south/west properties), not world neighbor identity.
+        // Pane: fully mirror PaneRenderHelper's CTM logic.
+        // PaneRenderHelper uses block.getIcon(0, meta) as base icon for all 4 horizontal faces,
+        // then queries CTMEngine for each side (XNeg/XPos/ZNeg/ZPos).
+        // We replicate this: get the correct base icon, map quad.face to Side, query CTMEngine.
         if (ctx.block instanceof BlockPane) {
-            Side paneSide = getPaneSide(ctx);
+            Side paneSide = getPaneSide(ctx.quad.face);
             if (paneSide == null) {
+                return; // UP/DOWN: skip CTM
+            }
+            // Use block's side-0 icon as base (matches PaneRenderHelper.updateTextures L150)
+            IIcon paneBase = ctx.block.getIcon(0, ctx.metadata);
+            if (paneBase == null) {
                 return;
             }
             IIcon ctm = CTMEngine.getCTMIconMultiPass(ctx.world, ctx.block,
-                    ctx.x, ctx.y, ctx.z, paneSide, base);
-            if (ctm != null && ctm != base) {
+                    ctx.x, ctx.y, ctx.z, paneSide, paneBase);
+            if (ctm != null) {
                 ctx.iconOverride = ctm;
             }
             return;
@@ -74,42 +80,17 @@ public class RpmcpRenderExtension implements IModelRenderExtension {
     }
 
     /**
-     * Get the CTM side for a pane quad based on its face and connection state.
-     * Mirrors PaneRenderHelper's logic: pane's north/south faces use ZNeg/ZPos,
-     * east/west faces use XNeg/XPos. Returns null if the face should not be
-     * CTM-processed (UP/DOWN faces, or unconnected faces).
+     * Map pane quad face to CTMEngine Side.
+     * Mirrors PaneRenderHelper: NORTH->ZNeg, SOUTH->ZPos, WEST->XNeg, EAST->XPos.
+     * Returns null for UP/DOWN (pane top/bottom faces are not CTM-processed).
      */
-    private static Side getPaneSide(RenderContext ctx) {
-        BlockPane pane = (BlockPane) ctx.block;
-        Direction face = ctx.quad.face;
-
-        // Map quad face to connection check direction
-        boolean connected;
-        Side side;
+    private static Side getPaneSide(Direction face) {
         switch (face) {
-            case NORTH:
-                connected = pane.canPaneConnectToBlock(ctx.world.getBlock(ctx.x, ctx.y, ctx.z - 1));
-                side = Side.ZNeg;
-                break;
-            case SOUTH:
-                connected = pane.canPaneConnectToBlock(ctx.world.getBlock(ctx.x, ctx.y, ctx.z + 1));
-                side = Side.ZPos;
-                break;
-            case WEST:
-                connected = pane.canPaneConnectToBlock(ctx.world.getBlock(ctx.x - 1, ctx.y, ctx.z));
-                side = Side.XNeg;
-                break;
-            case EAST:
-                connected = pane.canPaneConnectToBlock(ctx.world.getBlock(ctx.x + 1, ctx.y, ctx.z));
-                side = Side.XPos;
-                break;
-            default:
-                // UP/DOWN: pane top/bottom faces are not CTM-processed
-                return null;
+            case NORTH: return Side.ZNeg;
+            case SOUTH: return Side.ZPos;
+            case WEST:  return Side.XNeg;
+            case EAST:  return Side.XPos;
+            default:    return null; // UP/DOWN
         }
-
-        // Only query CTM if the pane is connected in this direction
-        // (unconnected faces show edge texture, not CTM variant)
-        return connected ? side : null;
     }
 }
