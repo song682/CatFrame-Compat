@@ -6,6 +6,8 @@ import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.CtmRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.RpmcpRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
+import decok.dfcdvadstf.catframe.ui.extended.theme.JsonThemeLoader;
+import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeManager;
 import io.qzz.dfdvdsf.jarfile.ModVersions;
 
 import static decok.dfcdvadstf.catframe.CatFrameCompat.logger;
@@ -17,6 +19,10 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
+
+        // ── Theme system: load JSON themes and activate the configured one ──
+        JsonThemeLoader.loadThemes();
+        ThemeManager.getInstance().setActive(CompatConfig.activeTheme);
 
         if (CompatConfig.ctmEnabled) {
             // MCPF-heritage CTM bridge: route connected-texture selection to the

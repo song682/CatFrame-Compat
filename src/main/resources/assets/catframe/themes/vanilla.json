@@ -1,0 +1,71 @@
+{
+  "id": "catframe:vanilla",
+  "name": "CatFrame Vanilla",
+  "textures": {
+    "catframe:widget/button/enabled": "catframe:textures/gui/widgets/button.png",
+    "catframe:widget/button/disabled": "catframe:textures/gui/widgets/button_disabled.png",
+    "catframe:widget/button/highlighted": "catframe:textures/gui/widgets/button_highlighted.png",
+
+    "catframe:widget/checkbox/normal": "catframe:textures/gui/widgets/checkbox.png",
+    "catframe:widget/checkbox/highlighted": "catframe:textures/gui/widgets/checkbox_highlighted.png",
+    "catframe:widget/checkbox/checked": "catframe:textures/gui/widgets/checkbox_checked.png",
+    "catframe:widget/checkbox/checked_highlighted": "catframe:textures/gui/widgets/checkbox_checked_highlighted.png",
+
+    "catframe:widget/scroll/scroller": "catframe:textures/gui/widgets/scroll.png",
+    "catframe:widget/scroll/track": "catframe:textures/gui/widgets/scroll_background.png",
+
+    "catframe:widget/selection/normal": "catframe:textures/gui/widgets/selection.png",
+    "catframe:widget/selection/highlighted": "catframe:textures/gui/widgets/selection_highlighted.png",
+    "catframe:widget/selection/selected": "catframe:textures/gui/widgets/selection_selected.png",
+    "catframe:widget/selection/selected_highlighted": "catframe:textures/gui/widgets/selection_selected_highlighted.png",
+
+    "catframe:widget/editbox/normal": "catframe:textures/gui/widgets/text_field.png",
+    "catframe:widget/editbox/focused": "catframe:textures/gui/widgets/text_field_highlighted.png",
+
+    "catframe:widget/toggle/normal": "catframe:textures/gui/widgets/toggle_swticher.png",
+    "catframe:widget/toggle/highlighted": "catframe:textures/gui/widgets/toggle_swticher_highlighted.png",
+    "catframe:widget/toggle/toggled": "catframe:textures/gui/widgets/toggle_swticher_toggled.png",
+    "catframe:widget/toggle/toggled_highlighted": "catframe:textures/gui/widgets/toggle_swticher_toggled_highlighted.png",
+
+    "catframe:tab/normal": "catframe:textures/gui/tabs/tab.png",
+    "catframe:tab/highlighted": "catframe:textures/gui/tabs/tab_highlighted.png",
+    "catframe:tab/selected": "catframe:textures/gui/tabs/tab_selected.png",
+    "catframe:tab/selected_highlighted": "catframe:textures/gui/tabs/tab_selected_highlighted.png",
+
+    "catframe:tooltip/background": "catframe:textures/gui/tooltips/background.png",
+    "catframe:tooltip/frame": "catframe:textures/gui/tooltips/frame.png",
+
+    "catframe:toast/default": "catframe:textures/gui/toast/default.png",
+    "catframe:toast/advancement": "catframe:textures/gui/toast/advancement.png",
+    "catframe:toast/recipe": "catframe:textures/gui/toast/recipe.png",
+    "catframe:toast/system": "catframe:textures/gui/toast/system.png",
+    "catframe:toast/tutorial": "catframe:textures/gui/toast/tutorial.png",
+    "catframe:toast/now_playing": "catframe:textures/gui/toast/now_playing.png",
+
+    "catframe:panel/header_separator": "catframe:textures/gui/seperator/header_separator.png",
+    "catframe:panel/footer_separator": "catframe:textures/gui/seperator/footer_separator.png",
+    "catframe:panel/background": "catframe:textures/gui/seperator/panel_background.png"
+  },
+  "colors": {
+    "catframe:color/button/text_enabled": "#E0E0E0",
+    "catframe:color/button/text_disabled": "#A0A0A0",
+    "catframe:color/button/text_hover": "#FFFFA0",
+
+    "catframe:color/tab/text_selected": "#FFFFFF",
+    "catframe:color/tab/text_hovered": "#FFFF55",
+    "catframe:color/tab/text_normal": "#A0A0A0",
+
+    "catframe:color/toast/background": "#CC000000",
+    "catframe:color/toast/border": "#FF555555",
+
+    "catframe:color/editbox/background": "#FF333333",
+    "catframe:color/editbox/background_focused": "#FF333366",
+    "catframe:color/editbox/border": "#FF888888",
+    "catframe:color/editbox/border_focused": "#FFFFFFFF",
+
+    "catframe:color/tabbar/background": "#FF000000"
+  },
+  "sounds": {
+    "catframe:sound/button_press": "minecraft:gui.button.press"
+  }
+}
