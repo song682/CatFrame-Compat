@@ -39,10 +39,17 @@ public class CatFrameCompactLateMixins implements ILateMixinLoader {
     @Override
     public List<String> getMixins(Set<String> loadedMods) {
         List<String> mixins = new ArrayList<>();
-        // RenderJsonItemModel is a client-side render class: registering it on
-        // a server would leave the injection target missing.
-        if (FMLCommonHandler.instance().getSide().isClient() && ItemPhysic.isMixinInstalled()) {
-            mixins.add("late.MixinRenderJsonItemModel");
+        if (FMLCommonHandler.instance().getSide().isClient()) {
+            // Allow arbitrary blockstate rotation angles (not just 0/90/180/270);
+            // bypasses CatFrame core's BlockstateKeyValidator.validateRotations()
+            // which would otherwise replace non-90° variants with builtin/missing.
+            mixins.add("late.MixinBlockstateKeyValidator");
+
+            // RenderJsonItemModel is a client-side render class: only when
+            // the Mixin edition of ItemPhysic is installed.
+            if (ItemPhysic.isMixinInstalled()) {
+                mixins.add("late.MixinRenderJsonItemModel");
+            }
         }
         return mixins;
     }
