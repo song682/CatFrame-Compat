@@ -16,7 +16,7 @@ The mod compatibility layer for CatFrame, also provide some useful tools for mod
 
 ### Known Limitations
 
-- **Glass Pane CTM Corner Connection (ANCP vs MNOP)**: When using CTM on glass panes, the corner connections may display incorrect variants (e.g., ANCP instead of MNOP). This is an architectural limitation: CatFrame's VMM rendering bypasses the specialized pane rendering logic (PaneRenderHelper/GlassPaneRenderer) that handles thin-pane connectivity via `canPaneConnectToBlock`. The CTM engine uses generic neighbor detection which doesn't account for pane thin-plate geometry. Basic pane CTM connections work correctly; only corner/edge variants may be inaccurate.
+- **Glass Pane CTM Corner Connection (ANCP vs MNOP)**: When using CTM on glass panes, the corner connections may display incorrect variants (e.g., ANCP instead of MNOP). This is an architectural limitation: CatFrame's VMM rendering bypasses the specialized pane rendering logic (PaneRenderHelper/GlassPaneRenderer) that handles thin-pane connectivity via `canPaneConnectToBlock`. The CTM engine uses generic neighbor detection which doesn't account for pane thin-plate geometry. Basic pane CTM connections work correctly; only corner/edge variants may be inaccurate. (Will be fixed after the 0.8.0)
 
 ## 3. Tag compat:
 
@@ -34,6 +34,13 @@ The mod compatibility layer for CatFrame, also provide some useful tools for mod
 ## Model
 
 - ModelBound: Derives block bounds from CatFrame JSON block models.
+- BlockState Rotator: 
+
+## UI
+
+Theme systems for modern UI developing.
+Animation for modern UI developing. 
+HTML Browser Like UI Creating.(developing)
 
 # Dependency
 

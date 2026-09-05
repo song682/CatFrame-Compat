@@ -5,19 +5,20 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import decok.dfcdvadstf.catframe.compact.Tags;
 import decok.dfcdvadstf.catframe.compact.proxy.CommonProxy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @Mod(
-        modid = Tags.MODID,
-        name = Tags.NAME,
-        version = Tags.VERSION,
+        modid = decok.dfcdvadstf.catframe.compact.Tags.MODID,
+        name = decok.dfcdvadstf.catframe.compact.Tags.NAME,
+        version = decok.dfcdvadstf.catframe.compact.Tags.VERSION,
         useMetadata = true,
         dependencies = "required-after:catframe@[0.6.7,);required-after:jarutils@[0.0.2,);after:ingameime;after:pineapple_tag@[1.5.2,);after:optifuture@[1.2.4,);after:angelica;after:notfine;after:itemphysic;after:mcpatcher@[0.3.0,)")
 public class CatFrameCompat {
 
-    public static Logger logger = LogManager.getLogger(Tags.NAME);
+    public static Logger logger = LogManager.getLogger(decok.dfcdvadstf.catframe.compact.Tags.NAME);
 
     public static CompatConfig config;
 
