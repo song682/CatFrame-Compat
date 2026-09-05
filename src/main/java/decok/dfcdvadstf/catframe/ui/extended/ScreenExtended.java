@@ -3,8 +3,9 @@ package decok.dfcdvadstf.catframe.ui.extended;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import decok.dfcdvadstf.catframe.ui.Text;
-import decok.dfcdvadstf.catframe.ui.extended.animation.AbstractAnimation;
+import decok.dfcdvadstf.catframe.ui.extended.animation.Animation;
 import decok.dfcdvadstf.catframe.ui.extended.animation.Easing;
+import decok.dfcdvadstf.catframe.ui.extended.animation.EasingFunction;
 import decok.dfcdvadstf.catframe.ui.extended.animation.ScreenTransition;
 import decok.dfcdvadstf.catframe.ui.extended.theme.DefaultTheme;
 import decok.dfcdvadstf.catframe.ui.extended.theme.Theme;
@@ -62,30 +63,30 @@ public abstract class ScreenExtended extends Screen {
     // ══════════════════════════════════════════════════════════════════════
 
     @Nullable
-    private AbstractAnimation currentAnimation;
+    private Animation currentAnimation;
 
     /**
      * Start (or restart) the given animation.
      * <p>启动（或重新开始）给定动画。</p>
      */
-    protected void startAnimation(AbstractAnimation animation) {
+    protected void startAnimation(Animation animation) {
         this.currentAnimation = animation;
         animation.start();
     }
 
     /** @return the currently running animation, or {@code null} / 当前动画，或 {@code null} */
     @Nullable
-    protected AbstractAnimation getCurrentAnimation() {
+    protected Animation getCurrentAnimation() {
         return currentAnimation;
     }
 
     /**
      * Convenience: start a screen transition with the given type, duration, and
-     * {@link Easing#sineInOut} easing.
-     * <p>便捷方法：以指定类型、持续时间和 {@link Easing#sineInOut} 缓动启动界面过渡。</p>
+     * {@link Easing.Curves#sineInOut} easing.
+     * <p>便捷方法：以指定类型、持续时间和 {@link Easing.Curves#sineInOut} 缓动启动界面过渡。</p>
      */
     protected void startTransition(ScreenTransition.Type type, int duration) {
-        startTransition(type, duration, Easing::sineInOut);
+        startTransition(type, duration, Easing.Curves::sineInOut);
     }
 
     /**
@@ -94,7 +95,7 @@ public abstract class ScreenExtended extends Screen {
      * <p>便捷方法：完全控制持续时间与缓动函数来启动界面过渡。</p>
      */
     protected void startTransition(ScreenTransition.Type type, int duration,
-                                   AbstractAnimation.EasingFunction easing) {
+                                   EasingFunction easing) {
         startAnimation(new ScreenTransition(type, duration, easing));
     }
 
@@ -119,7 +120,7 @@ public abstract class ScreenExtended extends Screen {
      */
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        AbstractAnimation anim = this.currentAnimation;
+        Animation anim = this.currentAnimation;
         ScreenTransition st = (anim instanceof ScreenTransition && anim.isPlaying())
                 ? (ScreenTransition) anim : null;
 

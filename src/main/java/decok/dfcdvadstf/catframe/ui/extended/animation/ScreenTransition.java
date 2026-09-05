@@ -27,7 +27,7 @@ import org.lwjgl.opengl.GL11;
  * <pre>{@code
  * // Fade + pop in over 10 ticks with sineInOut easing:
  * ScreenTransition open = new ScreenTransition(
- *         ScreenTransition.Type.FADE_AND_POP_IN, 10, Easing::sineInOut);
+ *         ScreenTransition.Type.FADE_AND_POP_IN, 10, Easing.Curves::sineInOut);
  * open.start();
  * }</pre>
  */

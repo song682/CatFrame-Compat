@@ -2,51 +2,36 @@ package decok.dfcdvadstf.catframe.ui.extended.animation;
 
 /**
  * <p>
- * Base class for tick-driven UI animations. Tracks elapsed ticks against a
- * configured duration and exposes a normalised progress value (0 → 1) through
- * an easing function. Subclasses implement {@link #applyAnimation(float)} to
- * produce the concrete visual effect (e.g. alpha change, scale transform).
+ * Tick-driven base implementation of {@link Animation}. Tracks elapsed ticks
+ * against a configured duration and exposes a normalised progress value
+ * (0 → 1) through an {@link EasingFunction}. Subclasses implement
+ * {@link #applyAnimation()} to produce the concrete visual effect.
  * </p>
  * <p>
- * 基于 tick 驱动的 UI 动画基类。以已流逝 tick 数对比配置的持续时间，经缓动函数
- * 输出归一化进度值（0 → 1）。子类实现 {@link #applyAnimation(float)} 以产生具体的
- * 视觉效果（如透明度变化、缩放变换）。
+ * {@link Animation} 的 tick 驱动基础实现。以已流逝 tick 数对比配置的持续时间，
+ * 经 {@link EasingFunction} 输出归一化进度值（0 → 1）。子类实现
+ * {@link #applyAnimation()} 以产生具体的视觉效果。
  * </p>
  *
  * <h3>Usage / 用法</h3>
  * <pre>{@code
- * ScreenTransition anim = new ScreenTransition(
- *         ScreenTransition.Type.FADE_IN, 10, Easing::sineInOut);
- * anim.start();
- * // each tick:
- * anim.tick();
- * // during render:
- * anim.applyAnimation();
+ * // Subclass example:
+ * class FadeIn extends AbstractAnimation {
+ *     FadeIn(int ticks, EasingFunction easing) { super(ticks, easing); }
+ *     {@literal @}Override public void applyAnimation() {
+ *         float alpha = getEasedProgress();
+ *         // apply alpha to GL state...
+ *     }
+ * }
  * }</pre>
  */
-public abstract class AbstractAnimation {
+public abstract class AbstractAnimation implements Animation {
 
-    private int duration;
+    private final int duration;
     private int elapsed;
     private boolean playing;
     private boolean finished;
     private EasingFunction easing;
-
-    /**
-     * Functional interface for easing (interpolation) functions.
-     * <p>缓动（插值）函数的函数式接口。</p>
-     */
-    @FunctionalInterface
-    public interface EasingFunction {
-        /**
-         * Map linear progress to an eased value.
-         * <p>将线性进度映射为缓动值。</p>
-         *
-         * @param t linear progress in [0, 1] / 线性进度 [0, 1]
-         * @return eased value, typically in [0, 1] / 缓动值，通常在 [0, 1] 内
-         */
-        float apply(float t);
-    }
 
     /**
      * @param duration animation duration in ticks (must be &gt; 0) / 动画持续时间（tick 数，须 &gt; 0）
@@ -59,12 +44,9 @@ public abstract class AbstractAnimation {
         this.easing = easing;
     }
 
-    // ──── Lifecycle / 生命周期 ────
+    // ──── Animation lifecycle / 动画生命周期 ────
 
-    /**
-     * Start (or restart) this animation from the beginning.
-     * <p>从头开始（或重新开始）本动画。</p>
-     */
+    @Override
     public void start() {
         this.elapsed = 0;
         this.playing = true;
@@ -72,11 +54,7 @@ public abstract class AbstractAnimation {
         onStart();
     }
 
-    /**
-     * Advance the animation by one tick. No-op when not playing.
-     * Automatically completes when the duration is reached.
-     * <p>推进一 tick。未播放时为空操作。达到持续时间后自动结束。</p>
-     */
+    @Override
     public void tick() {
         if (!playing) return;
         elapsed++;
@@ -88,7 +66,16 @@ public abstract class AbstractAnimation {
         }
     }
 
-    /** Force the animation to its end state immediately. / 立即将动画强制至结束状态。 */
+    @Override
+    public boolean isPlaying() { return playing; }
+
+    @Override
+    public boolean isFinished() { return finished; }
+
+    // ──── Extended control / 扩展控制 ────
+
+    /** Force the animation to its end state immediately.
+     *  <p>立即将动画强制至结束状态。</p> */
     public void skip() {
         this.elapsed = duration;
         this.playing = false;
@@ -102,20 +89,14 @@ public abstract class AbstractAnimation {
         this.playing = false;
     }
 
-    // ──── State queries / 状态查询 ────
-
-    /** @return whether this animation is currently playing / 动画是否正在播放 */
-    public boolean isPlaying() { return playing; }
-
-    /** @return whether this animation has finished / 动画是否已结束 */
-    public boolean isFinished() { return finished; }
+    // ──── Progress queries / 进度查询 ────
 
     /** @return raw (linear) progress in [0, 1] / 原始（线性）进度 [0, 1] */
     public float getProgress() {
         return duration <= 0 ? 1.0F : Math.min((float) elapsed / duration, 1.0F);
     }
 
-    /** @return eased progress / 缓动后的进度 */
+    /** @return eased progress via the configured easing function / 经缓动函数映射后的进度 */
     public float getEasedProgress() {
         return easing.apply(getProgress());
     }
@@ -127,9 +108,7 @@ public abstract class AbstractAnimation {
     public int getDuration() { return duration; }
 
     /** @return the current easing function / 当前缓动函数 */
-    public EasingFunction getEasing() {
-        return easing;
-    }
+    public EasingFunction getEasing() { return easing; }
 
     /** Replace the easing function. / 替换缓动函数。 */
     public void setEasing(EasingFunction easing) {
@@ -144,11 +123,4 @@ public abstract class AbstractAnimation {
 
     /** Called when the animation reaches its end. / 动画到达结束时调用。 */
     protected void onComplete() {}
-
-    /**
-     * Apply the visual effect for the current state. Called each render frame
-     * while the animation is active.
-     * <p>应用当前状态的视觉效果。动画活跃期间每渲染帧调用。</p>
-     */
-    public abstract void applyAnimation();
 }
