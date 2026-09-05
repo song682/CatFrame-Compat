@@ -3,6 +3,9 @@ package decok.dfcdvadstf.catframe.ui.extended;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import decok.dfcdvadstf.catframe.ui.Text;
+import decok.dfcdvadstf.catframe.ui.extended.animation.AbstractAnimation;
+import decok.dfcdvadstf.catframe.ui.extended.animation.Easing;
+import decok.dfcdvadstf.catframe.ui.extended.animation.ScreenTransition;
 import decok.dfcdvadstf.catframe.ui.extended.theme.DefaultTheme;
 import decok.dfcdvadstf.catframe.ui.extended.theme.Theme;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeKeys;
@@ -52,6 +55,84 @@ public abstract class ScreenExtended extends Screen {
 
     protected ScreenExtended(Text title) {
         super(title);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Animation support
+    // ══════════════════════════════════════════════════════════════════════
+
+    @Nullable
+    private AbstractAnimation currentAnimation;
+
+    /**
+     * Start (or restart) the given animation.
+     * <p>启动（或重新开始）给定动画。</p>
+     */
+    protected void startAnimation(AbstractAnimation animation) {
+        this.currentAnimation = animation;
+        animation.start();
+    }
+
+    /** @return the currently running animation, or {@code null} / 当前动画，或 {@code null} */
+    @Nullable
+    protected AbstractAnimation getCurrentAnimation() {
+        return currentAnimation;
+    }
+
+    /**
+     * Convenience: start a screen transition with the given type, duration, and
+     * {@link Easing#sineInOut} easing.
+     * <p>便捷方法：以指定类型、持续时间和 {@link Easing#sineInOut} 缓动启动界面过渡。</p>
+     */
+    protected void startTransition(ScreenTransition.Type type, int duration) {
+        startTransition(type, duration, Easing::sineInOut);
+    }
+
+    /**
+     * Convenience: start a screen transition with full control over duration
+     * and easing.
+     * <p>便捷方法：完全控制持续时间与缓动函数来启动界面过渡。</p>
+     */
+    protected void startTransition(ScreenTransition.Type type, int duration,
+                                   AbstractAnimation.EasingFunction easing) {
+        startAnimation(new ScreenTransition(type, duration, easing));
+    }
+
+    /**
+     * Called each tick to advance the animation. Override to add custom
+     * per-tick logic alongside the animation.
+     * <p>每 tick 调用以推进动画。覆写可在动画之外添加自定义 tick 逻辑。</p>
+     */
+    @Override
+    public void tick() {
+        if (currentAnimation != null && currentAnimation.isPlaying()) {
+            currentAnimation.tick();
+        }
+    }
+
+    /**
+     * Override of {@link Screen#drawScreen} that wraps the entire render
+     * pipeline with the current animation's GL state (if any). Subclasses that
+     * override this method <b>must</b> call {@code super.drawScreen(...)}.
+     * <p>覆写 {@link Screen#drawScreen}，以当前动画的 GL 状态包裹整个渲染管线
+     * （如有）。覆写此方法的子类<b>必须</b>调用 {@code super.drawScreen(...)}。</p>
+     */
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        AbstractAnimation anim = this.currentAnimation;
+        ScreenTransition st = (anim instanceof ScreenTransition && anim.isPlaying())
+                ? (ScreenTransition) anim : null;
+
+        if (st != null) {
+            st.pushGlState(this.width, this.height);
+        }
+        try {
+            super.drawScreen(mouseX, mouseY, partialTicks);
+        } finally {
+            if (st != null) {
+                st.popGlState();
+            }
+        }
     }
 
     // ──── Visibility conflict resolution ────
