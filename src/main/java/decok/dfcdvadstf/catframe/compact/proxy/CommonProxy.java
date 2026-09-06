@@ -7,6 +7,7 @@ import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
 import decok.dfcdvadstf.catframe.compact.tags.PineTags;
+import decok.dfcdvadstf.catframe.ui.extended.notifications.network.NotificationNetwork;
 
 import java.io.File;
 
@@ -15,6 +16,9 @@ import static decok.dfcdvadstf.catframe.CatFrameCompat.logger;
 public class CommonProxy  {
 
     public void preInit(FMLPreInitializationEvent event) {
+        // ── Notification network: register the server→client channel ──
+        NotificationNetwork.init();
+
         // Master switch for the ItemPhysic compatibility layer: when disabled,
         // all detection, crash rejection and rotation injection are bypassed.
         // Master switch for the PineappleTags compatibility layer: when disabled,
