@@ -3,11 +3,15 @@ package decok.dfcdvadstf.catframe.compact.proxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
 import decok.dfcdvadstf.catframe.compact.tags.PineTags;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.network.NotificationNetwork;
+import decok.dfcdvadstf.catframe.compact.notification.NotificationCommand;
+import decok.dfcdvadstf.catframe.compact.notification.NotificationDefinitions;
+import decok.dfcdvadstf.catframe.compact.notification.network.NotificationNetwork;
+import net.minecraft.server.MinecraftServer;
 
 import java.io.File;
 
@@ -46,6 +50,17 @@ public class CommonProxy  {
     }
 
     public void init(FMLInitializationEvent event) {
+    }
+
+    /**
+     * Register the {@code /notification} command and reload notification definitions
+     * from {@code catframenotifications.json} on every server start.
+     * <p>注册 {@code /notification} 命令，并在每次服务器启动时从
+     * {@code catframenotifications.json} 重新加载通知定义。</p>
+     */
+    public void onServerStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new NotificationCommand());
+        NotificationDefinitions.reload(MinecraftServer.getServer());
     }
 
     public void postInit(FMLPostInitializationEvent event) {

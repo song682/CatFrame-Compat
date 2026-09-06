@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.ui.extended.notifications.network;
+package decok.dfcdvadstf.catframe.compact.notification.network;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;

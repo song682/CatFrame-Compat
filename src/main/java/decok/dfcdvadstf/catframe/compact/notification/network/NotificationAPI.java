@@ -1,6 +1,7 @@
-package decok.dfcdvadstf.catframe.ui.extended.notifications.network;
+package decok.dfcdvadstf.catframe.compact.notification.network;
 
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationBase;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
@@ -65,6 +66,34 @@ public final class NotificationAPI {
     }
 
     /**
+     * Send a notification to a single player using a pre-built {@link NotificationBase}.
+     * <p>使用预构建的 {@link NotificationBase} 向单个玩家发送通知。</p>
+     */
+    public static void sendTo(EntityPlayerMP player, NotificationBase notification) {
+        sendTo(player,
+                notification.getTitle(), notification.getMessage(), notification.getDuration(),
+                notification.titleColor(), notification.messageColor(),
+                notification.getBackgroundColor(), notification.getBorderColor());
+    }
+
+    /**
+     * Send a notification to a player by name. No-op if the player is not online.
+     * <p>按名称向玩家发送通知。玩家不在线时无操作。</p>
+     */
+    public static void sendTo(MinecraftServer server, String playerName, NotificationBase notification) {
+        if (server == null || playerName == null || notification == null) return;
+        for (Object obj : server.getConfigurationManager().playerEntityList) {
+            if (obj instanceof EntityPlayerMP) {
+                EntityPlayerMP mp = (EntityPlayerMP) obj;
+                if (mp.getCommandSenderName().equalsIgnoreCase(playerName)) {
+                    sendTo(mp, notification);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
      * Broadcast a notification to all online players.
      * <p>向所有在线玩家广播通知。</p>
      *
@@ -93,5 +122,16 @@ public final class NotificationAPI {
                 channel.sendTo(packet, (EntityPlayerMP) obj);
             }
         }
+    }
+
+    /**
+     * Broadcast a pre-built notification to all online players.
+     * <p>使用预构建的 {@link NotificationBase} 向所有在线玩家广播通知。</p>
+     */
+    public static void broadcast(MinecraftServer server, NotificationBase notification) {
+        broadcast(server,
+                notification.getTitle(), notification.getMessage(), notification.getDuration(),
+                notification.titleColor(), notification.messageColor(),
+                notification.getBackgroundColor(), notification.getBorderColor());
     }
 }
