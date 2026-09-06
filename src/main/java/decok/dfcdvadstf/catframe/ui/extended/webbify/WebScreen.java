@@ -40,6 +40,7 @@ public class WebScreen extends ScreenExtended {
     private static final int CHROME_HEIGHT  = 20;
     private static final int CHROME_BG      = 0xFF2D2D2D;
     private static final int CHROME_TEXT    = 0xFFCCCCCC;
+    private static final int CHROME_BUTTON  = 0xFF444444;
     
     /* Config / 配置 */
     private boolean showChrome = true;
@@ -172,7 +173,7 @@ public class WebScreen extends ScreenExtended {
      */
     private void drawChrome(int mouseX, int mouseY) {
         // Background / 背景
-        drawRect(0, 0, width, CHROME_HEIGHT, CHROME_BG);
+        drawCustomRect(0, 0, width, CHROME_HEIGHT, CHROME_BG);
         
         // Title / 标题
         String title = currentPage != null ? currentPage.getUrl() : "WebScreen";
@@ -184,13 +185,13 @@ public class WebScreen extends ScreenExtended {
         // Back button / 后退按钮
         boolean backHovered = mouseX >= buttonX && mouseX <= buttonX + 35 && 
                              mouseY >= 0 && mouseY <= CHROME_HEIGHT;
-        drawRect(buttonX, 0, 35, CHROME_HEIGHT, backHovered ? 0xFF666666 : CHROME_BUTTON);
+        drawCustomRect(buttonX, 0, 35, CHROME_HEIGHT, backHovered ? 0xFF666666 : CHROME_BUTTON);
         drawString("← Back", buttonX + 5, CHROME_HEIGHT / 2 - 4, CHROME_TEXT);
         
         // Forward button / 前进按钮
         boolean forwardHovered = mouseX >= buttonX + 40 && mouseX <= buttonX + 75 && 
                                 mouseY >= 0 && mouseY <= CHROME_HEIGHT;
-        drawRect(buttonX + 40, 0, 35, CHROME_HEIGHT, forwardHovered ? 0xFF666666 : CHROME_BUTTON);
+        drawCustomRect(buttonX + 40, 0, 35, CHROME_HEIGHT, forwardHovered ? 0xFF666666 : CHROME_BUTTON);
         drawString("Forward →", buttonX + 45, CHROME_HEIGHT / 2 - 4, CHROME_TEXT);
     }
     
@@ -265,7 +266,7 @@ public class WebScreen extends ScreenExtended {
      * 绘制矩形
      * <p>Draw rectangle</p>
      */
-    private void drawRect(int x, int y, int w, int h, int color) {
+    private void drawCustomRect(int x, int y, int w, int h, int color) {
         Minecraft.getMinecraft().fontRenderer.drawStringWithShadow("", x, y, color);
         // Placeholder for actual rectangle drawing
         // 实际矩形绘制的占位符
