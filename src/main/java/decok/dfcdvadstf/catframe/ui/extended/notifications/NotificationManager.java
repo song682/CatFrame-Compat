@@ -33,7 +33,7 @@ import java.util.List;
  *
  * <h3>Usage / 用法</h3>
  * <pre>{@code
- * AbstractNotification n = AbstractNotification.builder("Title", "Body")
+ * NotificationBase n = NotificationBase.builder("Title", "Body")
  *         .durationSeconds(5)
  *         .borderColor(0xFFFF4444)
  *         .build();

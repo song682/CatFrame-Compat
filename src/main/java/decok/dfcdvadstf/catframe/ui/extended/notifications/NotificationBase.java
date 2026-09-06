@@ -22,7 +22,7 @@ import decok.dfcdvadstf.catframe.ui.overlay.ScreenAnchor;
  *
  * <h3>Usage / 用法</h3>
  * <pre>{@code
- * AbstractNotification n = AbstractNotification.builder("Title", "Body text")
+ * NotificationBase n = NotificationBase.builder("Title", "Body text")
  *         .duration(100)
  *         .borderColor(0xFFFF4444)
  *         .backgroundColor(0xFF000000)
@@ -31,7 +31,7 @@ import decok.dfcdvadstf.catframe.ui.overlay.ScreenAnchor;
  * NotificationManager.show(n);
  * }</pre>
  */
-public class AbstractNotification extends AbstractComponent implements Notification, Overlay {
+public class NotificationBase extends AbstractComponent implements Notification, Overlay {
 
     // ──── Default colour constants (mirrors Notification interface) ────
 
@@ -65,12 +65,12 @@ public class AbstractNotification extends AbstractComponent implements Notificat
 
     /** Creates a notification with all defaults. Use setters or the {@link Builder} to configure.
      *  <p>使用默认值创建通知。通过 setter 或 {@link Builder} 配置。</p> */
-    public AbstractNotification() {
+    public NotificationBase() {
     }
 
     /** Creates a notification with the given title and message.
      *  <p>使用给定标题和消息创建通知。</p> */
-    public AbstractNotification(String title, String message) {
+    public NotificationBase(String title, String message) {
         this.title = title != null ? title : "";
         this.message = message != null ? message : "";
     }
@@ -168,7 +168,7 @@ public class AbstractNotification extends AbstractComponent implements Notificat
     }
 
     // ──── Overlay implementation ────
-    // AbstractNotification implements Overlay for type compatibility.
+    // NotificationBase implements Overlay for type compatibility.
     // It is NOT individually registered with OverlayManager; NotificationManager
     // is the single Overlay that manages all active notifications.
 
@@ -225,11 +225,11 @@ public class AbstractNotification extends AbstractComponent implements Notificat
 
     /**
      * <p>
-     * Fluent builder for {@link AbstractNotification}. All colour and duration fields
+     * Fluent builder for {@link NotificationBase}. All colour and duration fields
      * are optional and fall back to the {@link Notification} interface defaults.
      * </p>
      * <p>
-     * {@link AbstractNotification} 的流利构建器。所有颜色和时长字段均为可选，
+     * {@link NotificationBase} 的流利构建器。所有颜色和时长字段均为可选，
      * 回退到 {@link Notification} 接口的默认值。
      * </p>
      */
@@ -295,10 +295,10 @@ public class AbstractNotification extends AbstractComponent implements Notificat
             return this;
         }
 
-        /** Build and return the immutable-configured {@link AbstractNotification}.
-         *  <p>构建并返回配置完成的 {@link AbstractNotification}。</p> */
-        public AbstractNotification build() {
-            AbstractNotification n = new AbstractNotification(title, message);
+        /** Build and return the immutable-configured {@link NotificationBase}.
+         *  <p>构建并返回配置完成的 {@link NotificationBase}。</p> */
+        public NotificationBase build() {
+            NotificationBase n = new NotificationBase(title, message);
             n.titleColor = this.titleColor;
             n.messageColor = this.messageColor;
             n.backgroundColor = this.backgroundColor;

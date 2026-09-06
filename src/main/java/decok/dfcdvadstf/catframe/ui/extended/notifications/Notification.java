@@ -4,17 +4,17 @@ package decok.dfcdvadstf.catframe.ui.extended.notifications;
  * <p>
  * Notification data interface — describes a HUD notification card's mutable properties:
  * title, message, colours, background, border, and display duration.<br>
- * The canonical implementation is {@link AbstractNotification}, which also provides a
- * fluent {@link AbstractNotification.Builder}.
+ * The canonical implementation is {@link NotificationBase}, which also provides a
+ * fluent {@link NotificationBase.Builder}.
  * </p>
  * <p>
  * 通知数据接口 —— 描述 HUD 通知卡片的可变属性：标题、消息、颜色、背景、边框与显示时长。<br>
- * 规范实现为 {@link AbstractNotification}，同时提供流利的 {@link AbstractNotification.Builder}。
+ * 规范实现为 {@link NotificationBase}，同时提供流利的 {@link NotificationBase.Builder}。
  * </p>
  *
  * <h3>Usage / 用法</h3>
  * <pre>{@code
- * AbstractNotification n = AbstractNotification.builder("Title", "Message body")
+ * NotificationBase n = NotificationBase.builder("Title", "Message body")
  *         .duration(100)
  *         .borderColor(0xFFFF4444)
  *         .build();
