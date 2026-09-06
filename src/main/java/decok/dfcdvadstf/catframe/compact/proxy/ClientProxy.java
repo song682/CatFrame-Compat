@@ -6,6 +6,7 @@ import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.CtmRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.RpmcpRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
+import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationManager;
 import decok.dfcdvadstf.catframe.ui.extended.theme.JsonThemeLoader;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeManager;
 import io.qzz.dfdvdsf.jarfile.ModVersions;
@@ -45,6 +46,11 @@ public class ClientProxy extends CommonProxy {
                 logger.info("RPMCP CTM bridge enabled (Right Proper MCPatcher detected).");
             }
         }
+
+        // ── Notification system: register the manager as a HUD+SCREEN overlay ──
+        // The CatFrame core ClientOverlayHandler already drives OverlayManager tick/render
+        // via Forge events; we only need to register our notification overlay.
+        NotificationManager.INSTANCE.register();
     }
 
 }
