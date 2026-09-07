@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.jsonmodel.bounds;
+package decok.dfcdvadstf.catframe.model.extended.json.bounds;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;

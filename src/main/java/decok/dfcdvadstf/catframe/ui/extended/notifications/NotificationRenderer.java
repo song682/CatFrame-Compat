@@ -14,14 +14,14 @@ import java.util.List;
  * Each card contains:
  * </p>
  * <ul>
- *   <li>A coloured left accent border.</li>
+ *   <li>A colored left accent border.</li>
  *   <li>The notification title and a countdown timer (top row).</li>
  *   <li>The description text — wraps to a second line if needed, with a {@code -} continuation marker.</li>
  *   <li>A progress bar at the bottom that drains as time runs out.</li>
  * </ul>
  * <p>
  * Cards slide in and out from the right edge using an ease-out cubic curve.
- * The background colour is fully customisable per notification; the default is pure black.
+ * The background color is fully customizable per notification; the default is pure black.
  * </p>
  * <p>
  * 将活跃通知渲染为右上角堆叠的卡片。<br>
@@ -223,7 +223,7 @@ public final class NotificationRenderer {
     }
 
     /**
-     * Darken an ARGB colour by the given factor (0 = black, 1 = unchanged).
+     * Darken an ARGB color by the given factor (0 = black, 1 = unchanged).
      * <p>以给定因子加深 ARGB 颜色（0 = 黑色，1 = 不变）。</p>
      */
     private static int darken(int argb, float factor) {
