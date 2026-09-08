@@ -26,7 +26,7 @@ The mod compatibility layer for CatFrame, also provide some useful tools for mod
 ## 4. Model for physics
 
 - Item Physic:    
-  (Official version) is not available and protentially causing a short in my item transformation, and cannot avoid because the asm short is fully short which means hard to retrieve, so this version will cause a crash.    
+  (Official version) is not available and potentially causing a short in my item transformation, and cannot avoid because the asm short is fully short which means hard to retrieve, so this version will cause a crash.    
   (Unofficial version) is fully tested and the rotation and spin will be fully applied by Mixin. 
 - FloatingItems: Developing...
 
@@ -34,13 +34,13 @@ The mod compatibility layer for CatFrame, also provide some useful tools for mod
 ## Model
 
 - ModelBound: Derives block bounds from CatFrame JSON block models.
-- BlockState Rotator: 
+- BlockState Transformation: Transformation for Block State From Modern NeoForge.
 
 ## UI
 
-Theme systems for modern UI developing.
-Animation for modern UI developing. 
-HTML Browser Like UI Creating.(developing)
+- Theme systems for modern UI developing. 
+- Animation for modern UI developing. (Just a few functions with a lot of limitation.)
+- HTML Browser Like UI Creating.(developing)
 
 # Dependency
 
