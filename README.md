@@ -48,5 +48,5 @@ CatFrame (Over 0.6.7), JarUtils (over 0.0.2).
 
 # License
 
-Source Code: [MIT License](LICENSE)
-Binary Jars: [Redistribution License](LICENSE-OF-MC_MOD-REDISTRIBUTION)
+**Source Code**: [MIT License](LICENSE)      
+**Binary Jars**: [Redistribution License](LICENSE-OF-MC_MOD-REDISTRIBUTION)     
