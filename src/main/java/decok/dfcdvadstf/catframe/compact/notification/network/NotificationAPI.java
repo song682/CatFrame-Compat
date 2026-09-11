@@ -1,7 +1,7 @@
 package decok.dfcdvadstf.catframe.compact.notification.network;
 
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationBase;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationBase;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 

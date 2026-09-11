@@ -2,8 +2,8 @@ package decok.dfcdvadstf.catframe.compact.notification;
 
 import com.google.gson.JsonObject;
 import decok.dfcdvadstf.catframe.CatFrameCompat;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.Notification;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationBase;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.Notification;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationBase;
 
 /**
  * <p>

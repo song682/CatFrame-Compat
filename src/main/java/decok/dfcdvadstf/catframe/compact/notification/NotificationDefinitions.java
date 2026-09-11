@@ -2,7 +2,7 @@ package decok.dfcdvadstf.catframe.compact.notification;
 
 import com.google.gson.*;
 import decok.dfcdvadstf.catframe.CatFrameCompat;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationBase;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationBase;
 import net.minecraft.server.MinecraftServer;
 
 import java.io.*;

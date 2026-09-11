@@ -6,7 +6,7 @@ import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.CtmRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.RpmcpRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationManager;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationManager;
 import decok.dfcdvadstf.catframe.ui.extended.theme.JsonThemeLoader;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeManager;
 import io.qzz.dfdvdsf.jarfile.ModVersions;

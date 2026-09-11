@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.ui.extended.notifications;
+package decok.dfcdvadstf.catframe.ui.extended.components.notifications;
 
 /**
  * <p>

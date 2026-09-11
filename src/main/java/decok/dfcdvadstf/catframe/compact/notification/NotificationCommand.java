@@ -1,7 +1,7 @@
 package decok.dfcdvadstf.catframe.compact.notification;
 
 import decok.dfcdvadstf.catframe.compact.notification.network.NotificationAPI;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationBase;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationBase;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;

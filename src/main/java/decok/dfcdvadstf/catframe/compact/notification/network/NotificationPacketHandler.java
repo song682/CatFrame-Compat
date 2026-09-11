@@ -5,8 +5,8 @@ import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationBase;
-import decok.dfcdvadstf.catframe.ui.extended.notifications.NotificationManager;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationBase;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationManager;
 
 /**
  * <p>
