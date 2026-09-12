@@ -4,7 +4,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import decok.dfcdvadstf.catframe.ui.Text;
 import decok.dfcdvadstf.catframe.ui.extended.animation.Animation;
-import decok.dfcdvadstf.catframe.ui.extended.animation.Easing;
+import decok.dfcdvadstf.catframe.ui.extended.animation.AnimationEngine;
+import decok.dfcdvadstf.catframe.ui.extended.animation.EasingCurves;
 import decok.dfcdvadstf.catframe.ui.extended.animation.EasingFunction;
 import decok.dfcdvadstf.catframe.ui.extended.animation.ScreenTransition;
 import decok.dfcdvadstf.catframe.ui.extended.theme.DefaultTheme;
@@ -59,34 +60,33 @@ public abstract class ScreenExtended extends Screen {
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  Animation support
+    //  Animation support — delegated to AnimationEngine
     // ══════════════════════════════════════════════════════════════════════
 
-    @Nullable
-    private Animation currentAnimation;
+    private final AnimationEngine animationEngine = new AnimationEngine();
 
     /**
-     * Start (or restart) the given animation.
-     * <p>启动（或重新开始）给定动画。</p>
+     * @return the animation engine for this screen / 本界面的动画引擎
      */
-    protected void startAnimation(Animation animation) {
-        this.currentAnimation = animation;
-        animation.start();
+    protected AnimationEngine getAnimationEngine() {
+        return animationEngine;
     }
 
-    /** @return the currently running animation, or {@code null} / 当前动画，或 {@code null} */
-    @Nullable
-    protected Animation getCurrentAnimation() {
-        return currentAnimation;
+    /**
+     * Add and start the given animation via the engine.
+     * <p>通过引擎添加并启动给定动画。</p>
+     */
+    protected void startAnimation(Animation animation) {
+        animationEngine.add(animation);
     }
 
     /**
      * Convenience: start a screen transition with the given type, duration, and
-     * {@link Easing.Curves#sineInOut} easing.
-     * <p>便捷方法：以指定类型、持续时间和 {@link Easing.Curves#sineInOut} 缓动启动界面过渡。</p>
+     * {@link EasingCurves#sineInOut} easing.
+     * <p>便捷方法：以指定类型、持续时间和 {@link EasingCurves#sineInOut} 缓动启动界面过渡。</p>
      */
     protected void startTransition(ScreenTransition.Type type, int duration) {
-        startTransition(type, duration, Easing.Curves::sineInOut);
+        startTransition(type, duration, EasingCurves::sineInOut);
     }
 
     /**
@@ -100,39 +100,31 @@ public abstract class ScreenExtended extends Screen {
     }
 
     /**
-     * Called each tick to advance the animation. Override to add custom
-     * per-tick logic alongside the animation.
-     * <p>每 tick 调用以推进动画。覆写可在动画之外添加自定义 tick 逻辑。</p>
+     * Called each tick to advance all animations via the engine.
+     * Override to add custom per-tick logic alongside the animations.
+     * <p>每 tick 调用以通过引擎推进所有动画。覆写可在动画之外添加自定义 tick 逻辑。</p>
      */
     @Override
     public void tick() {
-        if (currentAnimation != null && currentAnimation.isPlaying()) {
-            currentAnimation.tick();
-        }
+        animationEngine.tickAll();
     }
 
     /**
      * Override of {@link Screen#drawScreen} that wraps the entire render
-     * pipeline with the current animation's GL state (if any). Subclasses that
-     * override this method <b>must</b> call {@code super.drawScreen(...)}.
-     * <p>覆写 {@link Screen#drawScreen}，以当前动画的 GL 状态包裹整个渲染管线
-     * （如有）。覆写此方法的子类<b>必须</b>调用 {@code super.drawScreen(...)}。</p>
+     * pipeline with the animation engine's GL state (if any active animation
+     * exposes a {@link decok.dfcdvadstf.catframe.ui.extended.animation.GlState}).
+     * Subclasses that override this method <b>must</b> call {@code super.drawScreen(...)}.
+     * <p>覆写 {@link Screen#drawScreen}，以动画引擎的 GL 状态包裹整个渲染管线
+     * （若有活跃动画暴露 {@link decok.dfcdvadstf.catframe.ui.extended.animation.GlState}）。
+     * 覆写此方法的子类<b>必须</b>调用 {@code super.drawScreen(...)}。</p>
      */
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        Animation anim = this.currentAnimation;
-        ScreenTransition st = (anim instanceof ScreenTransition && anim.isPlaying())
-                ? (ScreenTransition) anim : null;
-
-        if (st != null) {
-            st.pushGlState(this.width, this.height);
-        }
+        animationEngine.pushGlState(this.width, this.height);
         try {
             super.drawScreen(mouseX, mouseY, partialTicks);
         } finally {
-            if (st != null) {
-                st.popGlState();
-            }
+            animationEngine.popGlState();
         }
     }
 

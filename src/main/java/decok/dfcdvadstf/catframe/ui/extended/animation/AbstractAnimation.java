@@ -4,24 +4,24 @@ package decok.dfcdvadstf.catframe.ui.extended.animation;
  * <p>
  * Tick-driven base implementation of {@link Animation}. Tracks elapsed ticks
  * against a configured duration and exposes a normalised progress value
- * (0 → 1) through an {@link EasingFunction}. Subclasses implement
- * {@link #applyAnimation()} to produce the concrete visual effect.
+ * (0 → 1) through an {@link EasingFunction}. Subclasses implement concrete
+ * behaviour (value interpolation, screen transitions, etc.).<br>
+ * GL state management is delegated to {@link AnimationEngine}; this class
+ * does not perform any GL operations.
  * </p>
  * <p>
  * {@link Animation} 的 tick 驱动基础实现。以已流逝 tick 数对比配置的持续时间，
- * 经 {@link EasingFunction} 输出归一化进度值（0 → 1）。子类实现
- * {@link #applyAnimation()} 以产生具体的视觉效果。
+ * 经 {@link EasingFunction} 输出归一化进度值（0 → 1）。子类实现具体行为
+ * （属性插值、界面过渡等）。<br>
+ * GL 状态管理交由 {@link AnimationEngine} 处理；本类不执行任何 GL 操作。
  * </p>
  *
  * <h3>Usage / 用法</h3>
  * <pre>{@code
  * // Subclass example:
- * class FadeIn extends AbstractAnimation {
- *     FadeIn(int ticks, EasingFunction easing) { super(ticks, easing); }
- *     {@literal @}Override public void applyAnimation() {
- *         float alpha = getEasedProgress();
- *         // apply alpha to GL state...
- *     }
+ * class MyAnimation extends AbstractAnimation {
+ *     MyAnimation(int ticks, EasingFunction easing) { super(ticks, easing); }
+ *     // override tick() to add custom per-tick logic
  * }
  * }</pre>
  */

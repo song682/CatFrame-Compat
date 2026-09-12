@@ -1,16 +1,18 @@
 package decok.dfcdvadstf.catframe.ui.extended.animation;
 
-import org.lwjgl.opengl.GL11;
-
 /**
  * <p>
  * A screen-level transition animation that combines fade (alpha) and pop (scale)
  * effects. Either or both effects can be active simultaneously, each with its
- * own duration and shared easing function.
+ * own duration and shared easing function.<br>
+ * This class is a <b>pure state container</b> — it populates a {@link GlState}
+ * that the {@link AnimationEngine} reads. It performs no GL calls itself.
  * </p>
  * <p>
  * 界面级别的过渡动画，组合淡入淡出（透明度）与弹出进入（缩放）效果。
- * 两种效果可独立启用，各自拥有独立的持续时间，共享缓动函数。
+ * 两种效果可独立启用，各自拥有独立的持续时间，共享缓动函数。<br>
+ * 本类为<b>纯状态容器</b> —— 它填充由 {@link AnimationEngine} 读取的
+ * {@link GlState}，自身不执行任何 GL 调用。
  * </p>
  *
  * <h3>Effect types / 效果类型</h3>
@@ -27,8 +29,8 @@ import org.lwjgl.opengl.GL11;
  * <pre>{@code
  * // Fade + pop in over 10 ticks with sineInOut easing:
  * ScreenTransition open = new ScreenTransition(
- *         ScreenTransition.Type.FADE_AND_POP_IN, 10, Easing.Curves::sineInOut);
- * open.start();
+ *         ScreenTransition.Type.FADE_AND_POP_IN, 10, EasingCurves::sineInOut);
+ * engine.add(open);
  * }</pre>
  */
 public class ScreenTransition extends AbstractAnimation {
@@ -48,13 +50,14 @@ public class ScreenTransition extends AbstractAnimation {
     private final int fadeDuration;
     private final int popDuration;
 
-    /** Current alpha multiplier [0, 1]. Read by {@link #applyAnimation()}.
-     *  <p>当前透明度乘数 [0, 1]。由 {@link #applyAnimation()} 读取。</p> */
+    /** Current alpha multiplier [0, 1]. / 当前透明度乘数 [0, 1]。 */
     private float currentAlpha = 1.0F;
 
-    /** Current scale factor (1.0 = normal size). Read by {@link #applyAnimation()}.
-     *  <p>当前缩放因子（1.0 = 正常尺寸）。由 {@link #applyAnimation()} 读取。</p> */
+    /** Current scale factor (1.0 = normal size). / 当前缩放因子（1.0 = 正常尺寸）。 */
     private float currentScale = 1.0F;
+
+    /** GL state exposed to the engine. / 向引擎暴露的 GL 状态。 */
+    private final GlState glState = new GlState();
 
     /**
      * Create a transition with independent fade and pop durations.
@@ -123,44 +126,17 @@ public class ScreenTransition extends AbstractAnimation {
                     break;
             }
         }
+
+        // Populate GlState for the engine to read
+        glState.setFadeEnabled(hasFade());
+        glState.setAlpha(currentAlpha);
+        glState.setScaleEnabled(hasPop() && currentScale != 1.0F);
+        glState.setScale(currentScale, currentScale);
     }
 
-    /**
-     * Apply the current transition state to OpenGL.
-     * Pushes GL attributes and matrix, enables blending with the current alpha,
-     * and applies scale transform from the screen centre if pop is active.
-     * <p>将当前过渡状态应用到 OpenGL。推入 GL 属性和矩阵、以当前透明度启用混合，
-     * 并在弹出激活时从界面中心应用缩放变换。</p>
-     *
-     * @param screenWidth  screen width for centre calculation / 屏幕宽度
-     * @param screenHeight screen height for centre calculation / 屏幕高度
-     */
-    public void pushGlState(int screenWidth, int screenHeight) {
-        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
-        GL11.glPushMatrix();
-
-        if (hasFade()) {
-            GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            GL11.glColor4f(1.0F, 1.0F, 1.0F, currentAlpha);
-        }
-
-        if (hasPop() && currentScale != 1.0F) {
-            float cx = screenWidth / 2.0F;
-            float cy = screenHeight / 2.0F;
-            GL11.glTranslatef(cx, cy, 0.0F);
-            GL11.glScalef(currentScale, currentScale, 1.0F);
-            GL11.glTranslatef(-cx, -cy, 0.0F);
-        }
-    }
-
-    /**
-     * Restore GL state after {@link #pushGlState}.
-     * <p>在 {@link #pushGlState} 之后恢复 GL 状态。</p>
-     */
-    public void popGlState() {
-        GL11.glPopMatrix();
-        GL11.glPopAttrib();
+    @Override
+    public GlState getGlState() {
+        return glState;
     }
 
     // ──── Accessors / 访问器 ────
@@ -184,12 +160,5 @@ public class ScreenTransition extends AbstractAnimation {
     public boolean hasPop() {
         return type == Type.POP_IN || type == Type.POP_OUT
                 || type == Type.FADE_AND_POP_IN || type == Type.FADE_AND_POP_OUT;
-    }
-
-    // AbstractAnimation.applyAnimation is not used directly for ScreenTransition;
-    // callers use pushGlState/popGlState instead.
-    @Override
-    public void applyAnimation() {
-        // No-op: ScreenTransition uses pushGlState(int, int) / popGlState() instead.
     }
 }
