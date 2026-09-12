@@ -1,6 +1,6 @@
 # CatFrame Compat
 
-The mod compatibility layer for CatFrame, also provide some useful tools for mod develop.
+The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame), also provide some useful tools for mod develop.
 
 # Compat
 ## 1. IME Compat
@@ -44,7 +44,7 @@ The mod compatibility layer for CatFrame, also provide some useful tools for mod
 
 # Dependency
 
-CatFrame (Over 0.6.7), JarUtils (over 0.0.2).
+[CatFrame](https://github.com/song682/CatFrame/releases/latest) (Over 0.6.7), JarUtils (over 0.0.2).
 
 # License
 
