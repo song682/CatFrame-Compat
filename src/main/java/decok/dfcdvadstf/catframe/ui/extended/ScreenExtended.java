@@ -4,10 +4,10 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import decok.dfcdvadstf.catframe.ui.Text;
 import decok.dfcdvadstf.catframe.ui.extended.animation.Animation;
-import decok.dfcdvadstf.catframe.ui.extended.animation.AnimationEngine;
-import decok.dfcdvadstf.catframe.ui.extended.animation.EasingCurves;
-import decok.dfcdvadstf.catframe.ui.extended.animation.EasingFunction;
-import decok.dfcdvadstf.catframe.ui.extended.animation.ScreenTransition;
+import decok.dfcdvadstf.catframe.ui.extended.animation.engine.AnimationEngine;
+import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.EasingFunction;
+import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.ScreenTransition;
+import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.easing.EasingCurves;
 import decok.dfcdvadstf.catframe.ui.extended.theme.DefaultTheme;
 import decok.dfcdvadstf.catframe.ui.extended.theme.Theme;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeKeys;
@@ -112,10 +112,10 @@ public abstract class ScreenExtended extends Screen {
     /**
      * Override of {@link Screen#drawScreen} that wraps the entire render
      * pipeline with the animation engine's GL state (if any active animation
-     * exposes a {@link decok.dfcdvadstf.catframe.ui.extended.animation.GlState}).
+     * exposes a {@link decok.dfcdvadstf.catframe.ui.extended.animation.engine.GlState}).
      * Subclasses that override this method <b>must</b> call {@code super.drawScreen(...)}.
      * <p>覆写 {@link Screen#drawScreen}，以动画引擎的 GL 状态包裹整个渲染管线
-     * （若有活跃动画暴露 {@link decok.dfcdvadstf.catframe.ui.extended.animation.GlState}）。
+     * （若有活跃动画暴露 {@link decok.dfcdvadstf.catframe.ui.extended.animation.engine.GlState}）。
      * 覆写此方法的子类<b>必须</b>调用 {@code super.drawScreen(...)}。</p>
      */
     @Override

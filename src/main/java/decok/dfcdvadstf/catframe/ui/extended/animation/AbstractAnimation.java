@@ -1,5 +1,8 @@
 package decok.dfcdvadstf.catframe.ui.extended.animation;
 
+import decok.dfcdvadstf.catframe.ui.extended.animation.engine.AnimationEngine;
+import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.EasingFunction;
+
 /**
  * <p>
  * Tick-driven base implementation of {@link Animation}. Tracks elapsed ticks
