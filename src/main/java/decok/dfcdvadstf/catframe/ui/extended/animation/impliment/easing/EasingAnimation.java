@@ -2,6 +2,7 @@ package decok.dfcdvadstf.catframe.ui.extended.animation.impliment.easing;
 
 import java.util.function.Consumer;
 
+import decok.dfcdvadstf.catframe.ui.components.AbstractComponent;
 import decok.dfcdvadstf.catframe.ui.extended.animation.AbstractAnimation;
 import decok.dfcdvadstf.catframe.ui.extended.animation.engine.GlState;
 import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.EasingFunction;
@@ -40,22 +41,21 @@ import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.EasingFunction;
  */
 public abstract class EasingAnimation extends AbstractAnimation {
 
-    private final Object target;
+    private final AbstractComponent target;
     private final float fadeInTicks;
     private final float fadeOutTicks;
     private final Consumer<Float> callback;
     private float currentValue;
 
     /**
-     * @param target        the component this animation is applied to (metadata, not used by engine)
-     *                      / 本动画应用到的组件（元数据，引擎不使用）
+     * @param target        the target component this animation is applied to / 本动画应用到的目标组件
      * @param fadeIn        fade-in duration in ticks (float, fractional allowed) / 淡入 tick 数
      * @param fadeOut       fade-out duration in ticks (float, fractional allowed) / 淡出 tick 数
      * @param totalDuration total animation duration in ticks / 总 tick 数
      * @param curve         easing curve function / 缓动曲线函数
      * @param callback      receives each interpolated value / 接收每个插值结果
      */
-    protected EasingAnimation(Object target, float fadeIn, float fadeOut,
+    protected EasingAnimation(AbstractComponent target, float fadeIn, float fadeOut,
                               int totalDuration, EasingFunction curve,
                               Consumer<Float> callback) {
         super(totalDuration, curve);
@@ -106,8 +106,8 @@ public abstract class EasingAnimation extends AbstractAnimation {
     /** @return the most recently computed interpolated value / 最近一次插值结果 */
     public float getCurrentValue() { return currentValue; }
 
-    /** @return the target component (metadata) / 目标组件（元数据） */
-    public Object getTarget() { return target; }
+    /** @return the target component / 目标组件 */
+    public AbstractComponent getTarget() { return target; }
 
     /** @return fade-in duration in ticks / 淡入 tick 数 */
     public float getFadeInTicks() { return fadeInTicks; }
