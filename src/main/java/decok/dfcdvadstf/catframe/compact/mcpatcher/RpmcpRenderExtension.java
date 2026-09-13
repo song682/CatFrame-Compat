@@ -45,17 +45,22 @@ public class RpmcpRenderExtension implements IModelRenderExtension {
         if (base == null) {
             return;
         }
-        // Pane: use blockstate-aware CTM calculation.
-        // PaneRenderHelper uses block.getIcon(0, meta) as base icon for all 4 horizontal faces.
-        // PaneCTMCalculator uses CatFrame's blockstateProps (north/east/south/west connection states)
-        // instead of CTMEngine's generic neighbor detection, solving the corner connection issue.
+        // Pane: fully mirror PaneRenderHelper's CTM logic.
+        // PaneRenderHelper uses block.getIcon(0, meta) as base icon for all 4 horizontal faces,
+        // then queries CTMEngine for each side (XNeg/XPos/ZNeg/ZPos).
+        // We replicate this: get the correct base icon, map quad.face to Side, query CTMEngine.
         if (ctx.block instanceof BlockPane) {
-            if (ctx.quad.face == Direction.UP || ctx.quad.face == Direction.DOWN) {
-                return; // UP/DOWN: skip CTM for panes
+            Side paneSide = getPaneSide(ctx.quad.face);
+            if (paneSide == null) {
+                return; // UP/DOWN: skip CTM
             }
-            IIcon ctm = PaneCTMCalculator.getPaneCTMIcon(ctx.world, ctx.block,
-                    ctx.x, ctx.y, ctx.z, ctx.quad.face, ctx.block.getIcon(0, ctx.metadata),
-                    ctx.blockstateProps);
+            // Use block's side-0 icon as base (matches PaneRenderHelper.updateTextures L150)
+            IIcon paneBase = ctx.block.getIcon(0, ctx.metadata);
+            if (paneBase == null) {
+                return;
+            }
+            IIcon ctm = CTMEngine.getCTMIconMultiPass(ctx.world, ctx.block,
+                    ctx.x, ctx.y, ctx.z, paneSide, paneBase);
             if (ctm != null) {
                 ctx.iconOverride = ctm;
             }
@@ -71,6 +76,21 @@ public class RpmcpRenderExtension implements IModelRenderExtension {
                 ctx.x, ctx.y, ctx.z, side, base);
         if (ctm != null && ctm != base) {
             ctx.iconOverride = ctm;
+        }
+    }
+
+    /**
+     * Map pane quad face to CTMEngine Side.
+     * Mirrors PaneRenderHelper: NORTH->ZNeg, SOUTH->ZPos, WEST->XNeg, EAST->XPos.
+     * Returns null for UP/DOWN (pane top/bottom faces are not CTM-processed).
+     */
+    private static Side getPaneSide(Direction face) {
+        switch (face) {
+            case NORTH: return Side.ZNeg;
+            case SOUTH: return Side.ZPos;
+            case WEST:  return Side.XNeg;
+            case EAST:  return Side.XPos;
+            default:    return null; // UP/DOWN
         }
     }
 }

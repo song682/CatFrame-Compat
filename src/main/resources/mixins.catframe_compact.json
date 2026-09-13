@@ -1,9 +1,8 @@
 {
   "required": true,
-  "package": "decok.dfcdvadstf.catframe.compact.mixin",
+  "package": "decok.dfcdvadstf.catframe.compact.mixin.middle",
   "refmap": "mixins.catframe_compact.refmap.json",
   "compatibilityLevel": "JAVA_8",
-  "plugin": "decok.dfcdvadstf.catframe.compact.mixin.CatFrameCompactMixinPlugin",
   "mixins": [],
   "client": [],
   "server": []
