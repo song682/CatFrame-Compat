@@ -43,12 +43,12 @@ public class CatFrameCompactLateMixins implements ILateMixinLoader {
             // Allow arbitrary blockstate rotation angles (not just 0/90/180/270);
             // bypasses CatFrame core's BlockstateKeyValidator.validateRotations()
             // which would otherwise replace non-90° variants with builtin/missing.
-            mixins.add("late.MixinBlockstateKeyValidator");
+            mixins.add("MixinBlockstateKeyValidator");
 
             // RenderJsonItemModel is a client-side render class: only when
             // the Mixin edition of ItemPhysic is installed.
             if (ItemPhysic.isMixinInstalled()) {
-                mixins.add("late.MixinRenderJsonItemModel");
+                mixins.add("MixinRenderJsonItemModel");
             }
         }
         return mixins;
