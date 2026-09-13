@@ -2,7 +2,7 @@ package decok.dfcdvadstf.catframe.compact.mcpatcher;
 
 import com.falsepattern.mcpatcher.internal.modules.ctm.CTMInfo;
 import com.falsepattern.mcpatcher.internal.modules.ctm.Method;
-import decok.dfcdvadstf.catframe.compact.mixin.accessor.CTMEngineAccessor;
+import decok.dfcdvadstf.catframe.compact.mixin.middle.accessor.CTMEngineAccessor;
 import decok.dfcdvadstf.catframe.core.Direction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;

@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.compact.mixin.accessor;
+package decok.dfcdvadstf.catframe.compact.mixin.middle.accessor;
 
 import com.falsepattern.mcpatcher.internal.modules.ctm.CTMInfo;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;

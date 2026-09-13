@@ -50,7 +50,7 @@ public class CatFrameCompactMixinPlugin implements IMixinConfigPlugin {
 
         // Add CTMEngineAccessor when RPMCP is present
         if (Loader.isModLoaded(RPMCP_MODID)) {
-            mixins.add("accessor.CTMEngineAccessor");
+            mixins.add("middle.accessor.CTMEngineAccessor");
         }
 
         return mixins.isEmpty() ? null : mixins;
