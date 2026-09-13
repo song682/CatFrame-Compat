@@ -39,17 +39,13 @@ public class CtmRenderExtension implements IModelRenderExtension {
         // Pane: mirror GlassPaneRenderer's logic (CTMUtils.getMCPF).
         // GlassPaneRenderer uses block.getIcon(0, meta) as base icon for CTM queries,
         // matching the RenderBlocks pipeline. We replicate this for consistency.
-        // A PaneCtmWorldWrapper intercepts diagonal neighbor lookups so the CTM
-        // engine sees correct pane corner connectivity (thin-plate geometry).
         if (ctx.block instanceof BlockPane) {
             // Use block's side-0 icon as base (matches GlassPaneRenderer.setupIcons L54)
             IIcon paneBase = ctx.block.getIcon(0, ctx.metadata);
             if (paneBase == null) {
                 return;
             }
-            IBlockAccess effectiveWorld = new PaneCtmWorldWrapper(
-                    ctx.world, ctx.x, ctx.y, ctx.z, (BlockPane) ctx.block, ctx.quad.face);
-            IIcon ctm = getBlockIcon(paneBase, ctx.block, effectiveWorld,
+            IIcon ctm = getBlockIcon(paneBase, ctx.block, ctx.world,
                     ctx.x, ctx.y, ctx.z, ctx.quad.face.ordinal());
             if (ctm != null) {
                 ctx.iconOverride = ctm;

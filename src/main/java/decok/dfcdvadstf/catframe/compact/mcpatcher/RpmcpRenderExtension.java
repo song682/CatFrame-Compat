@@ -9,7 +9,6 @@ import decok.dfcdvadstf.catframe.model.render.api.RenderContext;
 import decok.dfcdvadstf.catframe.model.render.api.RenderPhase;
 import net.minecraft.block.BlockPane;
 import net.minecraft.util.IIcon;
-import net.minecraft.world.IBlockAccess;
 
 /**
  * Render extension bridging RPMCP (Right Proper MCPatcher) CTM into the
@@ -60,10 +59,7 @@ public class RpmcpRenderExtension implements IModelRenderExtension {
             if (paneBase == null) {
                 return;
             }
-            // Wrap world to fix diagonal neighbor lookups for pane corner connectivity.
-            IBlockAccess effectiveWorld = new PaneCtmWorldWrapper(
-                    ctx.world, ctx.x, ctx.y, ctx.z, (BlockPane) ctx.block, ctx.quad.face);
-            IIcon ctm = CTMEngine.getCTMIconMultiPass(effectiveWorld, ctx.block,
+            IIcon ctm = CTMEngine.getCTMIconMultiPass(ctx.world, ctx.block,
                     ctx.x, ctx.y, ctx.z, paneSide, paneBase);
             if (ctm != null) {
                 ctx.iconOverride = ctm;
