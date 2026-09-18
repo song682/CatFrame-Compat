@@ -1,5 +1,5 @@
 # eclipse
-bin
+/bin/
 *.launch
 .settings
 .metadata
@@ -11,18 +11,18 @@ out
 *.ipr
 *.iws
 *.iml
-.idea
+/.idea/
 idea
-.qoder
+/.qoder/
 
 # gradle
-build
-.gradle
+/build/
+/.gradle/
 
 # minecraft
-minecraft
-eclipse
-run
+/.minecraft/
+/eclipse/
+/run/
 
 # Files from Forge MDK
 forge*changelog.txt

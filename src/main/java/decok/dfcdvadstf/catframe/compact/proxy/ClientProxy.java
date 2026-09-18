@@ -6,6 +6,8 @@ import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.CtmRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.RpmcpRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
+import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
+import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackRegistry;
 import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationManager;
 import decok.dfcdvadstf.catframe.ui.extended.theme.JsonThemeLoader;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeManager;
@@ -16,6 +18,7 @@ import static decok.dfcdvadstf.catframe.CatFrameCompat.logger;
 public class ClientProxy extends CommonProxy {
 
     public static final String OPTIFUTURE_MIN_VER = "1.2.3";
+    public final BuiltinPackDescriptor FIX_GLASS_PANE = new BuiltinPackDescriptor("glass_pane_fix", "pack.glass_pane_fix.title", "pack.glass_pane_fix.description");
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
@@ -36,6 +39,7 @@ public class ClientProxy extends CommonProxy {
                     || CompactBase.isAngelicaInstalled() || CompactBase.isNotFineInstalled()) {
                 logger.info("MCPF-heritage CTM bridge enabled (OptiFuture/Angelica/NotFine detected).");
                 ModelRenderExtensions.register(CtmRenderExtension.INSTANCE);
+                BuiltinPackRegistry.register(FIX_GLASS_PANE);
             }
 
             // RPMCP (Right Proper MCPatcher) CTM bridge: separate extension class
@@ -44,7 +48,10 @@ public class ClientProxy extends CommonProxy {
             if (CompactBase.isRightProperMCPatcherInstalled()) {
                 ModelRenderExtensions.register(RpmcpRenderExtension.INSTANCE);
                 logger.info("RPMCP CTM bridge enabled (Right Proper MCPatcher detected).");
+                BuiltinPackRegistry.register(FIX_GLASS_PANE);
             }
+
+
         }
 
         // ── Notification system: register the manager as a HUD+SCREEN overlay ──

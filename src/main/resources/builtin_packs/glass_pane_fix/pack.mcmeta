@@ -1,0 +1,8 @@
+{
+    "pack": {
+        "pack_format": 1,
+        "description": {
+          "translate": "pack.glass_pane_fix.description"
+        }
+    }
+}

@@ -1,0 +1,4 @@
+{
+  "pack.glass_pane_fix.title": "Glass Pane Fix",
+  "pack.glass_pane_fix.description": "Fix the internal face culling of the glass pane while making sure its connections are correct."
+}
