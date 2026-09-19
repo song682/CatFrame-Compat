@@ -2,15 +2,16 @@ package decok.dfcdvadstf.catframe.ui.extended.animation.impliment.easing;
 
 import java.util.function.Consumer;
 
-import decok.dfcdvadstf.catframe.ui.components.AbstractComponent;
+import decok.dfcdvadstf.catframe.ui.components.events.GuiEventListener;
 import decok.dfcdvadstf.catframe.ui.extended.animation.AbstractAnimation;
 import decok.dfcdvadstf.catframe.ui.extended.animation.engine.GlState;
 import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.EasingFunction;
 
 /**
  * <p>
- * Abstract base for component-targeted easing animations with configurable
- * fade-in and fade-out phases. Extends {@link AbstractAnimation} with a
+ * Abstract base for easing animations targeting a UI element (component or
+ * screen), with configurable fade-in and fade-out phases. Extends
+ * {@link AbstractAnimation} with a
  * three-phase lifecycle:<br>
  * <ol>
  *   <li><b>Fade-in</b> (0 → fadeIn): easing curve maps progress 0→1</li>
@@ -22,7 +23,7 @@ import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.EasingFunction;
  * value-only animation; GL effects are the caller's responsibility.
  * </p>
  * <p>
- * 面向组件的缓动动画抽象基类，支持可配置的淡入淡出阶段。在
+ * 面向 UI 元素（组件或界面）的缓动动画抽象基类，支持可配置的淡入淡出阶段。在
  * {@link AbstractAnimation} 基础上增加三阶段生命周期：<br>
  * <ol>
  *   <li><b>淡入</b>（0 → fadeIn）：缓动曲线映射进度 0→1</li>
@@ -41,21 +42,21 @@ import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.EasingFunction;
  */
 public abstract class EasingAnimation extends AbstractAnimation {
 
-    private final AbstractComponent target;
+    private final GuiEventListener target;
     private final float fadeInTicks;
     private final float fadeOutTicks;
     private final Consumer<Float> callback;
     private float currentValue;
 
     /**
-     * @param target        the target component this animation is applied to / 本动画应用到的目标组件
+     * @param target        the target UI element (component or screen) / 本动画应用到的目标 UI 元素（组件或界面）
      * @param fadeIn        fade-in duration in ticks (float, fractional allowed) / 淡入 tick 数
      * @param fadeOut       fade-out duration in ticks (float, fractional allowed) / 淡出 tick 数
      * @param totalDuration total animation duration in ticks / 总 tick 数
      * @param curve         easing curve function / 缓动曲线函数
      * @param callback      receives each interpolated value / 接收每个插值结果
      */
-    protected EasingAnimation(AbstractComponent target, float fadeIn, float fadeOut,
+    protected EasingAnimation(GuiEventListener target, float fadeIn, float fadeOut,
                               int totalDuration, EasingFunction curve,
                               Consumer<Float> callback) {
         super(totalDuration, curve);
@@ -106,8 +107,8 @@ public abstract class EasingAnimation extends AbstractAnimation {
     /** @return the most recently computed interpolated value / 最近一次插值结果 */
     public float getCurrentValue() { return currentValue; }
 
-    /** @return the target component / 目标组件 */
-    public AbstractComponent getTarget() { return target; }
+    /** @return the target UI element (component or screen) / 目标 UI 元素（组件或界面） */
+    public GuiEventListener getTarget() { return target; }
 
     /** @return fade-in duration in ticks / 淡入 tick 数 */
     public float getFadeInTicks() { return fadeInTicks; }
