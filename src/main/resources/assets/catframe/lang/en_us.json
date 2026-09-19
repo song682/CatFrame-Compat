@@ -1,4 +1,25 @@
 {
   "pack.glass_pane_fix.title": "Glass Pane Fix",
-  "pack.glass_pane_fix.description": "Fix the internal face culling of the glass pane while making sure its connections are correct."
+  "pack.glass_pane_fix.description": "Fix the internal face culling of the glass pane while making sure its connections are correct.",
+  "key.catframe_compact.open_theme_screen": "Open Theme Selection",
+  "catframe.theme.title": "Theme Selection",
+  "catframe.theme.themes": "Themes",
+  "catframe.theme.preview": "Preview",
+  "catframe.theme.apply": "Apply",
+  "catframe.theme.done": "Done",
+  "catframe.theme.active": "Active: %s",
+  "catframe.theme.empty": "No themes registered",
+  "catframe.theme.in_use": "in use",
+  "catframe.theme.preview.tab1": "General",
+  "catframe.theme.preview.tab2": "Display",
+  "catframe.theme.preview.tab3": "Audio",
+  "catframe.theme.preview.button": "Button",
+  "catframe.theme.preview.button_disabled": "Disabled",
+  "catframe.theme.preview.checkbox_on": "Checked",
+  "catframe.theme.preview.checkbox_off": "Unchecked",
+  "catframe.theme.preview.toggle_on": "On",
+  "catframe.theme.preview.toggle_off": "Off",
+  "catframe.theme.preview.editbox": "Sample text",
+  "catframe.theme.preview.toast_title": "Toast",
+  "catframe.theme.preview.toast_text": "Notification preview"
 }

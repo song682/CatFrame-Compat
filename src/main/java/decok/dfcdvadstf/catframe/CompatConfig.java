@@ -14,6 +14,7 @@ public class CompatConfig {
     public static boolean ctmDebugLog;
     /** Active UI theme id / 当前激活的 UI 主题 id */
     public static String activeTheme;
+    public static boolean blockStateRotationFreely;
 
     public CompatConfig(File file) {
         config = new Configuration(file);
@@ -27,11 +28,24 @@ public class CompatConfig {
         ctmEnabled = config.getBoolean("enableCtm", Configuration.CATEGORY_GENERAL, true, "MCPatcher-style CTM resource pack support: scan mcpatcher/ctm and optifine/ctm properties and route connected-texture selection through the CatFrame render pipeline. Set to false to bypass all CTM handling.");
         ctmDebugLog = config.getBoolean("ctmDebugLog", Configuration.CATEGORY_GENERAL, false, "Log loaded CTM rules, skipped invalid rules and unmatched textures. Only meaningful when enableCtm is true.");
         activeTheme = config.getString("activeTheme", Configuration.CATEGORY_GENERAL, "catframe:vanilla", "Active UI theme id. Themes are loaded from assets/<namespace>/themes/<id>.json. Set to a registered theme id to change the look of CatFrame-based UIs.");
+        blockStateRotationFreely = config.getBoolean("blockStateRotationFreely", Configuration.CATEGORY_GENERAL, false, "Active this to let BlockState rotating freely");
     }
 
     public void save() {
         if (config.hasChanged()) {
             config.save();
         }
+    }
+
+    /**
+     * Persist the active theme id to disk and update the in-memory field.
+     * <p>将当前激活主题 id 写入磁盘并更新内存字段。</p>
+     *
+     * @param themeId id of the theme to persist / 要持久化的主题 id
+     */
+    public void saveActiveTheme(String themeId) {
+        activeTheme = themeId;
+        config.get(Configuration.CATEGORY_GENERAL, "activeTheme", "catframe:vanilla").set(themeId);
+        save();
     }
 }

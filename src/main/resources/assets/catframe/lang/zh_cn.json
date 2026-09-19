@@ -1,4 +1,25 @@
 {
   "pack.glass_pane_fix.title": "玻璃板修复",
-  "pack.glass_pane_fix.description": "修复玻璃板内部的面剔除, 同时保证其链接正确性。"
+  "pack.glass_pane_fix.description": "修复玻璃板内部的面剔除, 同时保证其链接正确性。",
+  "key.catframe_compact.open_theme_screen": "打开主题选择界面",
+  "catframe.theme.title": "主题选择",
+  "catframe.theme.themes": "主题列表",
+  "catframe.theme.preview": "预览",
+  "catframe.theme.apply": "应用",
+  "catframe.theme.done": "完成",
+  "catframe.theme.active": "当前: %s",
+  "catframe.theme.empty": "未注册任何主题",
+  "catframe.theme.in_use": "使用中",
+  "catframe.theme.preview.tab1": "通用",
+  "catframe.theme.preview.tab2": "显示",
+  "catframe.theme.preview.tab3": "音频",
+  "catframe.theme.preview.button": "按钮",
+  "catframe.theme.preview.button_disabled": "禁用",
+  "catframe.theme.preview.checkbox_on": "已勾选",
+  "catframe.theme.preview.checkbox_off": "未勾选",
+  "catframe.theme.preview.toggle_on": "开",
+  "catframe.theme.preview.toggle_off": "关",
+  "catframe.theme.preview.editbox": "示例文本",
+  "catframe.theme.preview.toast_title": "提示",
+  "catframe.theme.preview.toast_text": "通知预览"
 }

@@ -36,6 +36,9 @@ public final class ThemeManager {
     /** Currently active theme. / 当前活动主题。 */
     private Theme activeTheme = DefaultTheme.INSTANCE;
 
+    /** Id of the currently active theme. / 当前活动主题的 id。 */
+    private String activeId = DefaultTheme.ID;
+
     private ThemeManager() {
     }
 
@@ -68,8 +71,10 @@ public final class ThemeManager {
         if (theme == null) {
             LOGGER.warn("Theme '{}' not found, falling back to default", themeId);
             activeTheme = DefaultTheme.INSTANCE;
+            activeId = DefaultTheme.ID;
         } else {
             activeTheme = theme;
+            activeId = themeId;
             LOGGER.info("Active theme set to '{}' ({})", themeId, theme.getName());
         }
     }
@@ -79,6 +84,24 @@ public final class ThemeManager {
      */
     public Theme getActive() {
         return activeTheme;
+    }
+
+    /**
+     * @return the id of the currently active theme / 当前活动主题的 id
+     */
+    public String getActiveId() {
+        return activeId;
+    }
+
+    /**
+     * Look up a registered theme by id.
+     * <p>按 id 查找已注册的主题。</p>
+     *
+     * @return the theme, or {@code null} if not registered / 主题对象，未注册时为 null
+     */
+    @Nullable
+    public Theme getTheme(String id) {
+        return themes.get(id);
     }
 
     /**
@@ -98,7 +121,21 @@ public final class ThemeManager {
      */
     @Nullable
     public ResourceLocation resolveTexture(String key) {
-        ResourceLocation result = resolveTextureInChain(activeTheme, key);
+        return resolveTextureFor(activeTheme, key);
+    }
+
+    /**
+     * Resolve a texture key against an explicit theme with fallback chain
+     * (theme → theme's fallback → {@link DefaultTheme}).
+     * <p>针对指定主题及回退链解析纹理键（主题 → 主题回退 → {@link DefaultTheme}）。</p>
+     *
+     * @param theme theme to resolve against, or {@code null} for default-only / 解析所用主题，可为 null
+     * @param key   semantic texture key / 语义纹理键
+     * @return resolved texture, or {@code null} if no theme provides it
+     */
+    @Nullable
+    public ResourceLocation resolveTextureFor(@Nullable Theme theme, String key) {
+        ResourceLocation result = resolveTextureInChain(theme, key);
         if (result != null) {
             return result;
         }
@@ -124,7 +161,21 @@ public final class ThemeManager {
      */
     @Nullable
     public Integer resolveColor(String key) {
-        Integer result = resolveColorInChain(activeTheme, key);
+        return resolveColorFor(activeTheme, key);
+    }
+
+    /**
+     * Resolve a colour key against an explicit theme with fallback chain
+     * (theme → theme's fallback → {@link DefaultTheme}).
+     * <p>针对指定主题及回退链解析颜色键（主题 → 主题回退 → {@link DefaultTheme}）。</p>
+     *
+     * @param theme theme to resolve against, or {@code null} for default-only / 解析所用主题，可为 null
+     * @param key   semantic colour key / 语义颜色键
+     * @return resolved ARGB colour, or {@code null} if no theme provides it
+     */
+    @Nullable
+    public Integer resolveColorFor(@Nullable Theme theme, String key) {
+        Integer result = resolveColorInChain(theme, key);
         if (result != null) {
             return result;
         }
@@ -178,6 +229,7 @@ public final class ThemeManager {
     public void reload() {
         themes.clear();
         activeTheme = DefaultTheme.INSTANCE;
+        activeId = DefaultTheme.ID;
         LOGGER.info("Theme manager reloaded");
     }
 

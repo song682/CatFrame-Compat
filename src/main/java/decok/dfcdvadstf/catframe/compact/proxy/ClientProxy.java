@@ -10,13 +10,17 @@ import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackRegistry;
 import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationManager;
 import decok.dfcdvadstf.catframe.ui.extended.theme.JsonThemeLoader;
+import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeCommand;
+import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeKeyHandler;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeManager;
 import io.qzz.dfdvdsf.jarfile.ModVersions;
+import net.minecraftforge.client.ClientCommandHandler;
 
 import static decok.dfcdvadstf.catframe.CatFrameCompat.logger;
 
 public class ClientProxy extends CommonProxy {
 
+    public CompatConfig config;
     public static final String OPTIFUTURE_MIN_VER = "1.2.3";
     public final BuiltinPackDescriptor FIX_GLASS_PANE = new BuiltinPackDescriptor("glass_pane_fix", "pack.glass_pane_fix.title", "pack.glass_pane_fix.description");
 
@@ -27,6 +31,10 @@ public class ClientProxy extends CommonProxy {
         // ── Theme system: load JSON themes and activate the configured one ──
         JsonThemeLoader.loadThemes();
         ThemeManager.getInstance().setActive(CompatConfig.activeTheme);
+
+        // ── Theme selection entry points: hotkey + client command ──
+        ClientCommandHandler.instance.registerCommand(new ThemeCommand());
+        ThemeKeyHandler.register();
 
         if (CompatConfig.ctmEnabled) {
             // MCPF-heritage CTM bridge: route connected-texture selection to the
