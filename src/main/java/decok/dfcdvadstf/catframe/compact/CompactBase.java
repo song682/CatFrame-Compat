@@ -54,6 +54,6 @@ public class CompactBase {
     }
 
     public static boolean isFloatingItemInstalled() {
-        return Loader.isModLoaded("floatingitem");
+        return Loader.isModLoaded("floatingitems");
     }
 }

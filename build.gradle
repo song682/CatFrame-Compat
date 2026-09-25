@@ -95,7 +95,6 @@ dependencies {
     runtimeOnly "maven.modrinth:codechickencore-unofficial:${project.cc_version}"
     runtimeOnly "maven.modrinth:codechickenlib-unofficial:${project.cc_version}"
     implementation "com.github.song682:catframe:${project.catframe_ver}"
-    compileOnly "it.unimi.dsi:fastutil:8.5.12"
     compileOnly "maven.modrinth:pineappletags:1.5.2"
     compileOnly "maven.modrinth:itemphysic-1.7.10-unofficial:1.3.1"
     compileOnly "maven.modrinth:mcpatcher:0.3.0"
@@ -108,15 +107,10 @@ dependencies {
     // IngameIME 无可用 JitPack 构件（该仓库全版本构建失败），lib/ 下的本地 dev jar
     // 是唯一可靠来源；但必须保持 compileOnly——它是完整 mod jar（含 @Mod 与 mixin
     // 配置），若进运行时 classpath 会与 mods/ 里实际安装的副本冲突。
-    compileOnly files('lib/IngameIME-1.7.10-2.0.10-dev.jar')
-    compileOnly files('lib/angelica-2.2.8-dev.jar')
-    compileOnly files('lib/mcpatcherforge-1.0.0-alpha-dev.jar')
-    implementation fileTree(dir: 'lib', includes: ['*.jar'],
-            excludes: [
-                    'IngameIME-1.7.10-2.0.10-dev.jar',
-                    'angelica-2.2.8-dev.jar'
-            ]
-    )
+    compileOnly "curse.maven:IngameIME-440032:5086826"
+    compileOnly "maven.modrinth:angelica:2.2.15"
+    compileOnly "curse.maven:FloatingItems-549437:3536678"
+    implementation fileTree(dir: 'lib', includes: ['*.jar'])
 }
 
 def dependenciesList = []

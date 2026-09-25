@@ -2,6 +2,7 @@ package decok.dfcdvadstf.catframe.compact.mixin;
 
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
+import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import cpw.mods.fml.common.FMLCommonHandler;
 import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
 
@@ -32,19 +33,6 @@ public class CatFrameCompactLateMixins implements ILateMixinLoader {
 
     @Override
     public List<String> getMixins(Set<String> loadedMods) {
-        List<String> mixins = new ArrayList<>();
-        if (FMLCommonHandler.instance().getSide().isClient()) {
-            // Allow arbitrary blockstate rotation angles (not just 0/90/180/270);
-            // bypasses CatFrame core's BlockstateKeyValidator.validateRotations()
-            // which would otherwise replace non-90° variants with builtin/missing.
-            mixins.add("MixinBlockstateKeyValidator");
-
-            // RenderJsonItemModel is a client-side render class: only when
-            // the Mixin edition of ItemPhysic is installed.
-            if (ItemPhysic.isMixinInstalled()) {
-                mixins.add("MixinRenderJsonItemModel");
-            }
-        }
-        return mixins;
+        return IMixins.getMixins(Mixins.class);
     }
 }
