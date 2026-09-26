@@ -93,18 +93,21 @@ public class ItemPhysic {
     /**
      * Scans the jars in the mods directory and decides the itemphysic variant
      * by content.
-     * <p>Detection is layered in two tiers:</p>
+     * <p>Detection is layered in two tiers; when they disagree, the Forge-level
+     * verdict (Tier 1) prevails — a jar scan must never override it:</p>
      * <ul>
-     *   <li><b>Tier 1 (Forge level)</b>: compares the loaded mod's version with
-     *       Forge's own versioning machinery —
+     *   <li><b>Tier 1 (Forge level, authoritative on conflict)</b>: compares the
+     *       loaded mod's version with Forge's own versioning machinery —
      *       {@code Loader#getIndexedModList().get(id).getProcessedVersion()}
      *       against a {@link DefaultArtifactVersion}; ≥ {@value #MIXIN_MIN_VERSION}
      *       confirms the Mixin edition — the official edition never released
-     *       that high, no jar scan needed.</li>
-     *   <li><b>Tier 2 (jar content)</b>: when the version is below
-     *       {@value #MIXIN_MIN_VERSION} or unreadable, falls back to class-entry
-     *       scanning: the official edition contains {@code ItemPatchingLoader},
-     *       the Mixin edition contains {@code physics/ClientPhysic}.</li>
+     *       that high, no jar scan needed. A verdict reached here is final:
+     *       Tier 2 is skipped entirely.</li>
+     *   <li><b>Tier 2 (jar content, fallback only)</b>: runs only when Tier 1
+     *       yields no verdict (itemphysic not loaded, or its version below
+     *       {@value #MIXIN_MIN_VERSION}); falls back to class-entry scanning:
+     *       the official edition contains {@code ItemPatchingLoader}, the Mixin
+     *       edition contains {@code physics/ClientPhysic}.</li>
      * </ul>
      * Scanned only once; repeated calls have no side effects. A missing or
      * unreadable directory is silently skipped (treated as not installed).
@@ -120,6 +123,8 @@ public class ItemPhysic {
         // floor can only be the Mixin rewrite, since the official line never
         // reached it. Uses Forge's own ArtifactVersion ordering, no re-implemented
         // version parsing.
+        // Authoritative on conflict: a verdict reached here is final — return
+        // immediately, so the jar scan below can never override it.
         ModContainer container = Loader.instance().getIndexedModList().get("itemphysic");
         if (container != null
                 && container.getProcessedVersion().compareTo(new DefaultArtifactVersion(MIXIN_MIN_VERSION)) >= 0) {
@@ -127,7 +132,8 @@ public class ItemPhysic {
             return;
         }
 
-        // Tier 2: jar content scan, only when the version is unknown or below the Mixin floor.
+        // Tier 2: jar content scan — fallback only, reached when Tier 1 yields
+        // no verdict (itemphysic not loaded, or its version below the Mixin floor).
         if (modsDir == null || !modsDir.isDirectory()) return;
 
         File[] files = modsDir.listFiles();
