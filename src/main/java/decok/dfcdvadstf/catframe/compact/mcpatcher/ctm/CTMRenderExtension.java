@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.compact.mcpatcher;
+package decok.dfcdvadstf.catframe.compact.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.ctm.CTMUtils;
 import decok.dfcdvadstf.catframe.model.render.IModelRenderExtension;
@@ -19,9 +19,9 @@ import net.minecraft.world.IBlockAccess;
  * (override tables, iterators) lives on its side; CatFrame only supplies the
  * call site that the VMM pipeline would otherwise skip.
  */
-public class CtmRenderExtension implements IModelRenderExtension {
+public class CTMRenderExtension implements IModelRenderExtension {
 
-    public static final CtmRenderExtension INSTANCE = new CtmRenderExtension();
+    public static final CTMRenderExtension INSTANCE = new CTMRenderExtension();
 
     @Override
     public void apply(RenderContext ctx) {

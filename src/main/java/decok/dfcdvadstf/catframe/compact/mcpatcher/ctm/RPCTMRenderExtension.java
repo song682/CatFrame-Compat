@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.compact.mcpatcher;
+package decok.dfcdvadstf.catframe.compact.mcpatcher.ctm;
 
 import com.falsepattern.mcpatcher.internal.config.ModuleConfig;
 import com.falsepattern.mcpatcher.internal.modules.common.Side;
@@ -15,7 +15,7 @@ import net.minecraft.util.IIcon;
  * CatFrame pipeline: for every world quad it asks RPMCP's {@link CTMEngine}
  * for a replacement icon and writes it into {@link RenderContext#iconOverride}.
  * <p>
- * Kept as a separate class from {@link CtmRenderExtension} for class-loading
+ * Kept as a separate class from {@link CTMRenderExtension} for class-loading
  * isolation: this one references {@code com.falsepattern.mcpatcher} classes,
  * so it must never be loaded when RPMCP is absent. The extension is only
  * registered when {@code mcpatcher} is detected, and the per-quad check of
@@ -24,9 +24,9 @@ import net.minecraft.util.IIcon;
  * <p>
  * Stateless: safe for parallel chunk compilation.
  */
-public class RpmcpRenderExtension implements IModelRenderExtension {
+public class RPCTMRenderExtension implements IModelRenderExtension {
 
-    public static final RpmcpRenderExtension INSTANCE = new RpmcpRenderExtension();
+    public static final RPCTMRenderExtension INSTANCE = new RPCTMRenderExtension();
 
     @Override
     public void apply(RenderContext ctx) {

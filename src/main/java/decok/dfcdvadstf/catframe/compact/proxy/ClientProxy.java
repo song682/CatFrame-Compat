@@ -3,8 +3,8 @@ package decok.dfcdvadstf.catframe.compact.proxy;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
-import decok.dfcdvadstf.catframe.compact.mcpatcher.CtmRenderExtension;
-import decok.dfcdvadstf.catframe.compact.mcpatcher.RpmcpRenderExtension;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CTMRenderExtension;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.RPCTMRenderExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackRegistry;
@@ -46,7 +46,7 @@ public class ClientProxy extends CommonProxy {
                     && ModVersions.versionMatches("OptiFuture", "optifuture", ">=" + OPTIFUTURE_MIN_VER))
                     || CompactBase.isAngelicaInstalled() || CompactBase.isNotFineInstalled()) {
                 logger.info("MCPF-heritage CTM bridge enabled (OptiFuture/Angelica/NotFine detected).");
-                ModelRenderExtensions.register(CtmRenderExtension.INSTANCE);
+                ModelRenderExtensions.register(CTMRenderExtension.INSTANCE);
                 BuiltinPackRegistry.register(FIX_GLASS_PANE);
             }
 
@@ -54,7 +54,7 @@ public class ClientProxy extends CommonProxy {
             // (com.falsepattern classes) registered only when the mcpatcher mod is
             // present, so the class is never loaded without it.
             if (CompactBase.isRightProperMCPatcherInstalled()) {
-                ModelRenderExtensions.register(RpmcpRenderExtension.INSTANCE);
+                ModelRenderExtensions.register(RPCTMRenderExtension.INSTANCE);
                 logger.info("RPMCP CTM bridge enabled (Right Proper MCPatcher detected).");
                 BuiltinPackRegistry.register(FIX_GLASS_PANE);
             }

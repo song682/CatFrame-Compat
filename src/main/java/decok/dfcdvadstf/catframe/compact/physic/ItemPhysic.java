@@ -1,11 +1,13 @@
 package decok.dfcdvadstf.catframe.compact.physic;
 
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.mixin.late.MixinRenderJsonItemModel;
 import io.qzz.dfdvdsf.jarfile.JarContents;
 import io.qzz.dfdvdsf.jarfile.JarNames;
 import io.qzz.dfdvdsf.jarfile.JarVersionGuesser;
-import io.qzz.dfdvdsf.jarfile.ModVersions;
 import net.minecraft.entity.item.EntityItem;
 
 import java.io.File;
@@ -93,8 +95,10 @@ public class ItemPhysic {
      * by content.
      * <p>Detection is layered in two tiers:</p>
      * <ul>
-     *   <li><b>Tier 1 (Forge level)</b>: reads the loaded mod's version via
-     *       {@link ModVersions#versionMatches}; ≥ {@value #MIXIN_MIN_VERSION}
+     *   <li><b>Tier 1 (Forge level)</b>: compares the loaded mod's version with
+     *       Forge's own versioning machinery —
+     *       {@code Loader#getIndexedModList().get(id).getProcessedVersion()}
+     *       against a {@link DefaultArtifactVersion}; ≥ {@value #MIXIN_MIN_VERSION}
      *       confirms the Mixin edition — the official edition never released
      *       that high, no jar scan needed.</li>
      *   <li><b>Tier 2 (jar content)</b>: when the version is below
@@ -112,9 +116,13 @@ public class ItemPhysic {
         scanned = true;
         if (!enabled) return;
 
-        // Tier 1: Forge-level version check — a version this high can only be
-        // the Mixin rewrite, since the official line never reached it.
-        if (ModVersions.versionMatches("ItemPhysic", "itemphysic", ">=" + MIXIN_MIN_VERSION)) {
+        // Tier 1: Forge-level version check — a version at or above the Mixin
+        // floor can only be the Mixin rewrite, since the official line never
+        // reached it. Uses Forge's own ArtifactVersion ordering, no re-implemented
+        // version parsing.
+        ModContainer container = Loader.instance().getIndexedModList().get("itemphysic");
+        if (container != null
+                && container.getProcessedVersion().compareTo(new DefaultArtifactVersion(MIXIN_MIN_VERSION)) >= 0) {
             mixin = true;
             return;
         }
