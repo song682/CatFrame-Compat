@@ -44,7 +44,7 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 
 # Dependency
 
-[CatFrame](https://github.com/song682/CatFrame/releases/latest) (Over 0.6.7), JarUtils (over 0.0.2).
+[CatFrame](https://github.com/song682/CatFrame/releases/latest) (Over 0.9.0), JarUtils (over 0.0.2).
 
 # License
 
