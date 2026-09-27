@@ -4,7 +4,7 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
-import decok.dfcdvadstf.catframe.compact.mixin.late.MixinRenderJsonItemModel;
+import decok.dfcdvadstf.catframe.compact.mixin.late.MixinItemPhysics;
 import io.qzz.dfdvdsf.jarfile.JarContents;
 import io.qzz.dfdvdsf.jarfile.JarNames;
 import io.qzz.dfdvdsf.jarfile.JarVersionGuesser;
@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
  * serve as distinguishing anchors. Compatibility policy: the official edition
  * crashes with a removal hint; the Mixin edition is allowed and its rotation
  * physics are recreated in the CatFrame renderer
- * ({@link MixinRenderJsonItemModel}).</p>
+ * ({@link MixinItemPhysics}).</p>
  */
 public class ItemPhysic {
 
