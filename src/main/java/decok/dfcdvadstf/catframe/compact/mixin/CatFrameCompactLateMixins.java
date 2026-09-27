@@ -33,6 +33,6 @@ public class CatFrameCompactLateMixins implements ILateMixinLoader {
 
     @Override
     public List<String> getMixins(Set<String> loadedMods) {
-        return IMixins.getMixins(Mixins.class);
+        return IMixins.getLateMixins(Mixins.class, loadedMods);
     }
 }

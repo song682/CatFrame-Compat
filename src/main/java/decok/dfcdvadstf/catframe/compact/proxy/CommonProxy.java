@@ -15,10 +15,9 @@ import net.minecraft.server.MinecraftServer;
 
 import java.io.File;
 
-import static decok.dfcdvadstf.catframe.CatFrameCompat.config;
 import static decok.dfcdvadstf.catframe.CatFrameCompat.logger;
 
-public class CommonProxy  {
+public class CommonProxy {
 
     public void preInit(FMLPreInitializationEvent event) {
         // ── Notification network: register the server→client channel ──

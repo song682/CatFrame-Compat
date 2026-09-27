@@ -10,7 +10,7 @@ public enum Mixins implements IMixins {
     BLOCK_STATE_VALIDATOR(
         new MixinBuilder("BlockState rotation breaker")
             .addClientMixins(
-                "late.MixinBlockstateKeyValidator"
+                "MixinBlockstateKeyValidator"
             )
             .setApplyIf(() -> CompatConfig.blockStateRotationFreely)
             .setPhase(Phase.LATE)
@@ -19,7 +19,7 @@ public enum Mixins implements IMixins {
     ITEM_PHYSIC_COMPAT(
         new MixinBuilder("Item physics compatibility")
             .addClientMixins(
-                "late.MixinItemPhysics"
+                "MixinItemPhysics"
             )
             .setApplyIf(CompactBase::isItemPhysicInstalled)
             .setPhase(Phase.LATE)
