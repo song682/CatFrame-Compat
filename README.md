@@ -27,7 +27,7 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 
 - Item Physic:    
   (Official version) is not available and potentially causing a short in my item transformation, and cannot avoid because the asm short is fully short which means hard to retrieve, so this version will cause a crash.    
-  (Unofficial version) is tested and the rotation and spin will be applied by Mixin. 
+  (Unofficial version) is tested fine and the rotation and spin will be fully applied by Mixin. 
 - FloatingItems: Developing...
 
 # Tools
