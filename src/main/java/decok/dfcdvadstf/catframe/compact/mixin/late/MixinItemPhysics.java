@@ -68,11 +68,11 @@ import java.util.Map;
  *       pair only — the pitch rotation stays unconditional, exactly like
  *       {@code applyRotationsItem} does;</li>
  *   <li>{@code ClientPhysic.applyRotations} runs every frame (through
- *       {@link ItemPhysic#applyRotations}, reflection, zero compile-time
- *       dependency): an airborne item keeps accumulating its flip, while a
- *       resting one would have its pitch zeroed — that reset stands for flat
- *       sheets, and is superseded for block geometry by the landing-face
- *       preservation described below;</li>
+ *       {@link ItemPhysic#applyRotations}, a direct compile-time-verified call
+ *       into the installed Mixin edition): an airborne item keeps accumulating
+ *       its flip, while a resting one would have its pitch zeroed — that reset
+ *       stands for flat sheets, and is superseded for block geometry by the
+ *       landing-face preservation described below;</li>
  *   <li>factor order follows the GL call order (first call is the leftmost
  *       factor): 2D = {@code Rx(90°) × Rz(yaw) × Rx(pitch)},
  *       3D = {@code Ry(yaw) × Rx(pitch)}; the block branch additionally clamps

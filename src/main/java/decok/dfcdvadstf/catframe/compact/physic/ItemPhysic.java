@@ -1,5 +1,6 @@
 package decok.dfcdvadstf.catframe.compact.physic;
 
+import com.creativemd.itemphysic.physics.ClientPhysic;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
@@ -11,7 +12,6 @@ import io.qzz.dfdvdsf.jarfile.JarVersionGuesser;
 import net.minecraft.entity.item.EntityItem;
 
 import java.io.File;
-import java.lang.reflect.Method;
 
 /**
  * ItemPhysic compatibility utility.
@@ -26,25 +26,35 @@ import java.lang.reflect.Method;
  *   <li><b>Mixin edition</b> (kotmatross, depends on UniMixins): injects vanilla
  *       methods at fine granularity and actively yields to third-party
  *       IItemRenderer, so it can coexist; its drop-flip animation is driven by
- *       {@code ClientPhysic.applyRotations}, invoked here via reflection
- *       (zero compile-time dependency).</li>
+ *       {@code ClientPhysic.applyRotations}, linked and called directly here.</li>
  * </ul>
+ *
+ * <p><b>Linking, not vendoring</b>: the Mixin edition is GPLv3, so this layer
+ * copies none of its source — it only calls the class the installed jar puts on
+ * the classpath (a {@code compileOnly} dependency), which leaves this mod's own
+ * sources and distribution under MIT. The upstream API is effectively frozen,
+ * so the call is compile-time verified instead of reflective: an upstream
+ * signature change fails the build rather than degrading silently at runtime.</p>
  *
  * <p>Variant detection reuses jar-utils' jar content scanning
  * ({@link JarContents#findClassEntries}): a pure filesystem operation that
  * does not depend on classloader state; the official-only class
  * {@code ItemPatchingLoader} and the Mixin-only class {@code ClientPhysic}
  * serve as distinguishing anchors. Compatibility policy: the official edition
- * crashes with a removal hint; the Mixin edition is allowed and its rotation
- * physics are recreated in the CatFrame renderer
- * ({@link MixinItemPhysics}).</p>
+ * crashes with a removal hint; the Mixin edition is allowed — its physics are
+ * called through {@link #applyRotations} and its render-side rotation chain is
+ * recreated in the CatFrame renderer ({@link MixinItemPhysics}).</p>
  */
 public class ItemPhysic {
 
     /** Official edition (CreativeMD ASM coremod) only class: the doRender wholesale-replacement patch entry. */
     private static final String OFFICIAL_CORE_LOADER = "com.creativemd.itemphysic.ItemPatchingLoader";
 
-    /** Mixin edition only class: rotation/fluid/web-slowdown logic (1.3.1 kotmatross edition). */
+    /**
+     * Mixin edition only class: rotation/fluid/web-slowdown logic (1.3.1
+     * kotmatross edition). Serves twice — as the artifact {@link #scan(File)}
+     * keys on, and as the class {@link #applyRotations} links against.
+     */
     private static final String MIXIN_CLIENT_PHYSIC = "com.creativemd.itemphysic.physics.ClientPhysic";
 
     /**
@@ -53,9 +63,6 @@ public class ItemPhysic {
      * version ≥ 1.2.6 confirms the Mixin edition without scanning jar content.
      */
     private static final String MIXIN_MIN_VERSION = "1.2.6";
-
-    /** Cached reflection handle, avoiding a reflection lookup every frame. */
-    private static Method applyRotationsMethod;
 
     // === === === Scan results (scanned once, all verdicts cached) === === ===
 
@@ -183,25 +190,25 @@ public class ItemPhysic {
     }
 
     /**
-     * Invokes the Mixin edition's {@code ClientPhysic.applyRotations(EntityItem)}
-     * via reflection to update the drop item's {@code rotationPitch}
-     * (falling flip / landing reset / fluid and web slowdown).
-     * <p>Zero compile-time dependency on ItemPhysic: when the Mixin edition is
-     * not installed, the class is missing, or the method signature changed,
-     * it degrades silently (exceptions dropped) without affecting CatFrame's
-     * own rendering.</p>
+     * Applies the Mixin edition's {@code ClientPhysic.applyRotations(EntityItem)}
+     * to update the drop item's {@code rotationPitch} (falling flip / landing
+     * reset / fluid and web slowdown).
+     *
+     * <p>Called directly against the {@code compileOnly} 1.3.1 API — no
+     * reflection — so the call is verified by the compiler. The linkage
+     * invariant that makes this safe: {@value #MIXIN_CLIENT_PHYSIC} is both the
+     * artifact scanned in {@link #scan(File)} and the class linked here, and
+     * every caller gates on {@link #isMixinInstalled()} first, so the class is
+     * guaranteed to be on the classpath whenever this method runs. Should that
+     * invariant ever break, it now surfaces as a {@code NoClassDefFoundError}
+     * instead of being swallowed — fail loudly, never degrade silently.</p>
+     *
+     * <p>调用方必须先确认 {@link #isMixinInstalled()}：本方法直接链接上游类，
+     * 未安装 Mixin 版就调用会抛出 {@code NoClassDefFoundError}，不再静默降级。</p>
      *
      * @param item the drop-item entity being rendered
      */
     public static void applyRotations(EntityItem item) {
-        try {
-            if (applyRotationsMethod == null) {
-                Class<?> clazz = Class.forName(MIXIN_CLIENT_PHYSIC);
-                applyRotationsMethod = clazz.getMethod("applyRotations", EntityItem.class);
-            }
-            applyRotationsMethod.invoke(null, item);
-        } catch (Throwable ignored) {
-            // Mixin edition not installed or API changed: degrade silently.
-        }
+        ClientPhysic.applyRotations(item);
     }
 }
