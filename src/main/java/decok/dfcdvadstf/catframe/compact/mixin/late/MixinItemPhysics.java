@@ -69,13 +69,27 @@ import java.util.Map;
  *       {@code applyRotationsItem} does;</li>
  *   <li>{@code ClientPhysic.applyRotations} runs every frame (through
  *       {@link ItemPhysic#applyRotations}, reflection, zero compile-time
- *       dependency), so a landing item's pitch resets to {@code 0} while an
- *       airborne one keeps accumulating its flip;</li>
+ *       dependency): an airborne item keeps accumulating its flip, while a
+ *       resting one would have its pitch zeroed — that reset stands for flat
+ *       sheets, and is superseded for block geometry by the landing-face
+ *       preservation described below;</li>
  *   <li>factor order follows the GL call order (first call is the leftmost
  *       factor): 2D = {@code Rx(90°) × Rz(yaw) × Rx(pitch)},
  *       3D = {@code Ry(yaw) × Rx(pitch)}; the block branch additionally clamps
  *       {@code rotationPitch > 360} back to {@code 0}.</li>
  * </ul>
+ *
+ * <p><b>Landing-face preservation</b> — a deliberate extension of the Mixin
+ * edition rather than a verbatim port. Because the edition zeroes a resting
+ * item's tumble angle, a block always settles on the very same face: a log
+ * thrown from a height tumbles on the way down and then always lies core-down,
+ * never bark-down. Here the angle the item arrives with is kept instead, and
+ * quantized to the nearest quarter turn
+ * ({@link #catframecompact$snapToQuarterTurn}), so a block comes to rest on
+ * whichever face was closest to the ground at the moment of landing — a log can
+ * end up bark-down — while still lying flush instead of hovering tilted above
+ * the surface. Block-like geometry only: flat sheets keep the vanilla flat rest
+ * pose.</p>
  *
  * <p><b>Upstream mismatches corrected here as well</b> (both are
  * CatFrame/Forge semantics, independent of ItemPhysic):</p>
@@ -111,9 +125,9 @@ import java.util.Map;
 public abstract class MixinItemPhysics {
 
     /**
-     * Supplies the ItemPhysic rotation — and the block-item size compensation —
-     * as the pre-transform of CatFrame's item pipeline for the drop item
-     * currently being rendered.
+     * Supplies the ItemPhysic rotation — plus the block-item size compensation
+     * and the landing-face preservation — as the pre-transform of CatFrame's
+     * item pipeline for the drop item currently being rendered.
      *
      * @param preTransform the baked pre-transform of the pipeline
      *                     ({@code scale(2.0)} for {@code ENTITY} up to CatFrame
@@ -156,6 +170,14 @@ public abstract class MixinItemPhysics {
         // the installed one — nothing to recreate then.
         if (!ItemPhysic.isMixinInstalled()) return preTransform;
 
+        // 刷新前先记下翻滚角：这就是物品此刻呈现的角度，也是落地那一帧的"到达角"
+        // ——ClientPhysic 一旦判定物品静止就把 rotationPitch 归零，而落地要保持的
+        // 恰恰是这个值。
+        // The tumble angle is captured before the refresh: it is the angle the
+        // item is showing right now — the one it arrives with on the landing
+        // frame — which ClientPhysic is about to zero once the item rests.
+        float tumblePitch = item.rotationPitch;
+
         // Same order as ItemPhysic: refresh rotationPitch first (landing reset,
         // airborne flip accumulation, fluid/web slowdown), then build the
         // rotation from it.
@@ -197,12 +219,30 @@ public abstract class MixinItemPhysics {
             if (item.rotationPitch > 360.0F) item.rotationPitch = 0.0F;
             if (!groundedOrMoving) return preTransform;
 
+            // 落地面保持：不再沿用 ClientPhysic 的归零，而是把到达角吸附到最近的
+            // 1/4 圈，让方块停在"落地瞬间最接近地面的那个面"上（原木因此可以树皮面
+            // 朝地，而不是永远木心朝地）。必须回写实体字段，否则下一帧 ClientPhysic
+            // 的归零会把它抹掉。
+            // Landing-face preservation: instead of following ClientPhysic's
+            // reset, the angle the item arrives with is quantized to the nearest
+            // quarter turn, so the block settles on the face that was closest to
+            // the ground at the moment of landing (a log can rest bark-down
+            // instead of always ending up core-down). Written back to the entity
+            // field, otherwise ClientPhysic's next reset would wipe it.
+            if (item.onGround) {
+                tumblePitch = catframecompact$snapToQuarterTurn(tumblePitch);
+                item.rotationPitch = tumblePitch;
+            } else {
+                // Still airborne: the refreshed angle is this frame's tumble.
+                tumblePitch = item.rotationPitch;
+            }
+
             // injectRotations: glRotatef(yaw, 0,1,0) then glRotatef(pitch, 1,0,0)
             step.setIdentity();
             step.rotY(Math.toRadians(item.rotationYaw));
             rotation.mul(step);
             step.setIdentity();
-            step.rotX(Math.toRadians(item.rotationPitch));
+            step.rotX(Math.toRadians(tumblePitch));
             rotation.mul(step);
         } else {
             // injectRotationsItem: glRotatef(90, 1,0,0) then glRotatef(yaw, 0,0,1)
@@ -229,6 +269,25 @@ public abstract class MixinItemPhysics {
         if (preTransform == null) return rotation;
         rotation.mul(preTransform);
         return rotation;
+    }
+
+    /**
+     * Quantizes a tumble angle to the nearest quarter turn.
+     *
+     * <p>Serves the landing-face preservation: an item arriving at, say,
+     * {@code 137°} settles at {@code 90°}, the closest-to-ground face (a bark
+     * side for a log), which also keeps the block flush with the surface instead
+     * of leaving it hovering tilted over it. Idempotent — an already quantized
+     * angle maps to itself — so it can be re-applied on every resting frame.</p>
+     *
+     * <p>把翻滚角吸附到最近的 1/4 圈（90° 的整数倍）：137° → 90°，使方块停在落地
+     * 瞬间最接近地面的那个面，并贴合地面。幂等，可逐帧重复调用。</p>
+     *
+     * @param angle the tumble angle of the landing frame, in degrees
+     * @return the angle rounded to the nearest multiple of {@code 90}
+     */
+    private static float catframecompact$snapToQuarterTurn(float angle) {
+        return Math.round(angle / 90.0F) * 90.0F;
     }
 
     /**
