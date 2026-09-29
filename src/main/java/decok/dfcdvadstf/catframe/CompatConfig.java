@@ -12,6 +12,8 @@ public class CompatConfig {
     public static boolean ctmEnabled;
     /** Log loaded CTM rules and unmatched textures / 记录 CTM 规则加载与未命中纹理 */
     public static boolean ctmDebugLog;
+    /** MCPatcher-style Natural Textures support (RPMCP) / MCPatcher 式 Natural Textures 支持（RPMCP） */
+    public static boolean naturalTexturesEnabled;
     /** Active UI theme id / 当前激活的 UI 主题 id */
     public static String activeTheme;
     public static boolean blockStateRotationFreely;
@@ -27,6 +29,7 @@ public class CompatConfig {
         itemPhysicCompat = config.getBoolean("enableItemPhysicCompat", Configuration.CATEGORY_GENERAL, false, "Enable the ItemPhysic compatibility layer: detection, rejection of the official ASM coremod, and drop-rotation injection for the Mixin rewrite. Set to false to bypass all ItemPhysic handling.");
         ctmEnabled = config.getBoolean("enableCtm", Configuration.CATEGORY_GENERAL, true, "MCPatcher-style CTM resource pack support: scan mcpatcher/ctm and optifine/ctm properties and route connected-texture selection through the CatFrame render pipeline. Set to false to bypass all CTM handling.");
         ctmDebugLog = config.getBoolean("ctmDebugLog", Configuration.CATEGORY_GENERAL, false, "Log loaded CTM rules, skipped invalid rules and unmatched textures. Only meaningful when enableCtm is true.");
+        naturalTexturesEnabled = config.getBoolean("enableNaturalTextures", Configuration.CATEGORY_GENERAL, true, "MCPatcher-style Natural Textures support: route RPMCP's per-position UV rotation/flip (natural.properties) through the CatFrame uvOverride channel. Requires the mcpatcher mod. Set to false to bypass all Natural Textures handling.");
         activeTheme = config.getString("activeTheme", Configuration.CATEGORY_GENERAL, "catframe:vanilla", "Active UI theme id. Themes are loaded from assets/<namespace>/themes/<id>.json. Set to a registered theme id to change the look of CatFrame-based UIs.");
         blockStateRotationFreely = config.getBoolean("blockStateRotationFreely", Configuration.CATEGORY_GENERAL, false, "Active this to let BlockState rotating freely");
     }

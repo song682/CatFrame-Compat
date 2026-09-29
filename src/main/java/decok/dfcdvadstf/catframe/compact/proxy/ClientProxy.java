@@ -5,6 +5,7 @@ import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.RPCTMRenderExtension;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.RPNaturalExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackRegistry;
@@ -60,6 +61,16 @@ public class ClientProxy extends CommonProxy {
             }
 
 
+        }
+
+        // RPMCP (Right Proper MCPatcher) Natural Textures bridge: writes per-position
+        // UV rotation/flip into the native RenderContext.uvOverride channel (CatFrame
+        // >= 0.9.4). Same class-loading isolation and detection gate as the CTM bridge;
+        // registered after it so the chain order is Leaves -> CTM -> Natural
+        // (last writer wins, Natural reads whatever iconOverride is already set).
+        if (CompatConfig.naturalTexturesEnabled && CompactBase.isRightProperMCPatcherInstalled()) {
+            ModelRenderExtensions.register(RPNaturalExtension.INSTANCE);
+            logger.info("RPMCP Natural Textures bridge enabled (Right Proper MCPatcher detected).");
         }
 
         // ── Notification system: register the manager as a HUD+SCREEN overlay ──
