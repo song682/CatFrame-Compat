@@ -28,4 +28,5 @@ idea
 forge*changelog.txt
 
 # Wiki
-/tmps
+/tmps/
+/.vscode/

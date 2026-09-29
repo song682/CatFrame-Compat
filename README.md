@@ -5,7 +5,7 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 # Compat
 ## 1. IME Compat
 
-- IngameIME compat: For all of the text input box components let it input CJK
+- IngameIME compat: For all the text input box components let it input CJK
 - IMEBackport: Same as IngameIME.
 
 ## 2. MCPatcher Compat
@@ -41,7 +41,7 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 
 - Theme systems for modern UI developing. 
 - Animation for modern UI developing. (Just a few functions with a lot of limitation.)
-- HTML Browser Like UI Creating.(developing)
+- HTML Browser Like UI Creating. (Developing...)
 
 # Dependency
 

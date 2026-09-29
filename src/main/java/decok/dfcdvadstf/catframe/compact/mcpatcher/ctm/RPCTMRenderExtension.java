@@ -30,35 +30,24 @@ public class RPCTMRenderExtension implements IModelRenderExtension {
 
     @Override
     public void apply(RenderContext ctx) {
-        if (ctx.phase != RenderPhase.BLOCK_WORLD) {
-            return;
-        }
+        if (ctx.phase != RenderPhase.BLOCK_WORLD) return;
         // Respect RPMCP's own connected-textures toggle.
-        if (!ModuleConfig.isConnectedTexturesEnabled()) {
-            return;
-        }
+        if (!ModuleConfig.isConnectedTexturesEnabled()) return;
+
         // Direction-less quads (cross etc.) have no face to query.
-        if (ctx.world == null || ctx.block == null || ctx.quad.face == null) {
-            return;
-        }
+        if (ctx.world == null || ctx.block == null || ctx.quad.face == null) return;
         IIcon base = ctx.quad.icon;
-        if (base == null) {
-            return;
-        }
+        if (base == null) return;
         // Pane: fully mirror PaneRenderHelper's CTM logic.
         // PaneRenderHelper uses block.getIcon(0, meta) as base icon for all 4 horizontal faces,
         // then queries CTMEngine for each side (XNeg/XPos/ZNeg/ZPos).
         // We replicate this: get the correct base icon, map quad.face to Side, query CTMEngine.
         if (ctx.block instanceof BlockPane) {
             Side paneSide = getPaneSide(ctx.quad.face);
-            if (paneSide == null) {
-                return; // UP/DOWN: skip CTM
-            }
+            if (paneSide == null) return; // UP/DOWN: skip CTM
             // Use block's side-0 icon as base (matches PaneRenderHelper.updateTextures L150)
             IIcon paneBase = ctx.block.getIcon(0, ctx.metadata);
-            if (paneBase == null) {
-                return;
-            }
+            if (paneBase == null) return;
             IIcon ctm = CTMEngine.getCTMIconMultiPass(ctx.world, ctx.block,
                     ctx.x, ctx.y, ctx.z, paneSide, paneBase);
             if (ctm != null) {
@@ -69,9 +58,7 @@ public class RPCTMRenderExtension implements IModelRenderExtension {
 
         // Non-pane blocks: use generic CTMEngine neighbor query
         Side side = Side.fromMCDirection(ctx.quad.face.ordinal());
-        if (side == null) {
-            return;
-        }
+        if (side == null) return;
         IIcon ctm = CTMEngine.getCTMIconMultiPass(ctx.world, ctx.block,
                 ctx.x, ctx.y, ctx.z, side, base);
         if (ctm != null && ctm != base) {
