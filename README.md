@@ -32,7 +32,7 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 - FloatingItems: Developing...
 
 ## 5. Offhand Compat
-- Backhand: Let the catframe hand things render correctly in the offhand/left hand (For right-handed person, for the left-handed person is right hand. Developing...)
+- Backhand: Let the catframe hand things render correctly in the offhand/left hand (For right-handed person, but for the left-handed person is right hand. Developing...)
 
 # Tools
 ## Model
