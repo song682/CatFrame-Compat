@@ -31,6 +31,9 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
   (Unofficial version) is tested fine and the rotation and spin will be fully applied by Mixin. 
 - FloatingItems: Developing...
 
+## 5. Offhand Compat
+- Backhand: Let the catframe hand things render correctly in the offhand/left hand (For right-handed person, for the left-handed person is right hand. Developing...)
+
 # Tools
 ## Model
 
