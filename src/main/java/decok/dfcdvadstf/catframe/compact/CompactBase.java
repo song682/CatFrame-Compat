@@ -39,6 +39,28 @@ public class CompactBase {
         return Loader.isModLoaded("optifuture");
     }
 
+    /**
+     * Whether the installed OptiFuture build carries the Natural Textures API
+     * ({@code com.prupe.mcpatcher.natural.NaturalTextures}). Probed by class
+     * presence without initialization so builds that predate the natural module
+     * are rejected before the bridge class is registered (and thus loaded).
+     *
+     * @return true when OptiFuture is installed and exposes the natural module
+     */
+    public static boolean isOptiFutureNaturalAvailable() {
+        if (!isOptiFutureInstalled()) {
+            return false;
+        }
+        try {
+            Class.forName("com.prupe.mcpatcher.natural.NaturalTextures", false,
+                    CompactBase.class.getClassLoader());
+            return true;
+        } catch (Throwable t) {
+            // OptiFuture build without the natural module.
+            return false;
+        }
+    }
+
     // Tags support
     public static boolean isWolfTagInstalled() {
         return Loader.isModLoaded("pineapple_tag");

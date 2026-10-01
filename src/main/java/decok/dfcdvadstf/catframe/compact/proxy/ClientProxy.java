@@ -5,6 +5,7 @@ import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.RPCTMRenderExtension;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.NaturalExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.RPNaturalExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
@@ -71,6 +72,17 @@ public class ClientProxy extends CommonProxy {
         if (CompatConfig.naturalTexturesEnabled && CompactBase.isRightProperMCPatcherInstalled()) {
             ModelRenderExtensions.register(RPNaturalExtension.INSTANCE);
             logger.info("RPMCP Natural Textures bridge enabled (Right Proper MCPatcher detected).");
+        }
+
+        // OptiFuture Natural Textures bridge: the MCPatcher-heritage sibling of the
+        // RPMCP bridge above, linking the com.prupe.mcpatcher family instead. Same
+        // class-loading isolation; the capability probe (class presence) keeps the
+        // link safe on OptiFuture builds that predate the natural module. Note both
+        // natural bridges write uvOverride, so installing RPMCP and OptiFuture
+        // together stacks their transforms - pick one MCPatcher-family mod.
+        if (CompatConfig.naturalTexturesEnabled && CompactBase.isOptiFutureNaturalAvailable()) {
+            ModelRenderExtensions.register(NaturalExtension.INSTANCE);
+            logger.info("OptiFuture Natural Textures bridge enabled (OptiFuture detected).");
         }
 
         // ── Notification system: register the manager as a HUD+SCREEN overlay ──
