@@ -11,6 +11,7 @@ import decok.dfcdvadstf.catframe.compact.tags.PineTags;
 import decok.dfcdvadstf.catframe.compact.notification.NotificationCommand;
 import decok.dfcdvadstf.catframe.compact.notification.NotificationDefinitions;
 import decok.dfcdvadstf.catframe.compact.notification.network.NotificationNetwork;
+import decok.dfcdvadstf.catframe.language.LanguageScanner;
 import net.minecraft.server.MinecraftServer;
 
 import java.io.File;
@@ -20,6 +21,10 @@ import static decok.dfcdvadstf.catframe.CatFrameCompat.logger;
 public class CommonProxy {
 
     public void preInit(FMLPreInitializationEvent event) {
+        // ── JSON language files: scan this mod's own container for assets/<ns>/lang ──
+        // Forward them through the core LanguageRegister (registers reload overrides too).
+        LanguageScanner.scan();
+
         // ── Notification network: register the server→client channel ──
         NotificationNetwork.init();
 
