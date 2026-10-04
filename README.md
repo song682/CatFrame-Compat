@@ -46,6 +46,10 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 - Animation for modern UI developing. (Just a few functions with a lot of limitation.)
 - HTML Browser Like UI Creating. (Developing...)
 
+## Localization
+
+- This module is a widened tool that let JSON language that in any package loading.
+
 # Dependency
 
 [CatFrame](https://github.com/song682/CatFrame/releases/latest) (Over 0.9.0), JarUtils (over 0.0.2).

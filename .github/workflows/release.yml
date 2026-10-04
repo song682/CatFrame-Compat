@@ -14,5 +14,5 @@ jobs:
   release:
     uses: song682/workflows/.github/workflows/release-template.yml@main
     with:
-      mod_archives_name: 'CatFrame'
+      mod_archives_name: 'CatFrameCompat'
       mc_version: '1.7.10'

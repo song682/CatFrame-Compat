@@ -99,6 +99,7 @@ dependencies {
     compileOnly "maven.modrinth:pineappletags:1.5.2"
     compileOnly "maven.modrinth:itemphysic-1.7.10-unofficial:1.3.1"
     compileOnly "maven.modrinth:mcpatcher:0.3.0"
+    compileOnly "com.github.song682:OptiFuture:1.2.5"
 
     compileOnly "com.github.song682:IMEInputBackport:v1.3"
     // IngameIME has no usable JitPack artifact (all versions fail to build there),
