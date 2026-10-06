@@ -28,13 +28,13 @@ import javax.annotation.Nullable;
 public class ToggleButton extends AbstractButton {
 
     private static final ResourceLocation TOGGLE_TEXTURE = new ResourceLocation("catframe",
-            "textures/gui/widgets/toggle_swticher.png");
+            "textures/gui/widgets_extend/toggle_swticher.png");
     private static final ResourceLocation TOGGLE_HIGHLIGHTED_TEXTURE = new ResourceLocation("catframe",
-            "textures/gui/widgets/toggle_swticher_highlighted.png");
+            "textures/gui/widgets_extend/toggle_swticher_highlighted.png");
     private static final ResourceLocation TOGGLE_TOGGLED_TEXTURE = new ResourceLocation("catframe",
-            "textures/gui/widgets/toggle_swticher_toggled.png");
+            "textures/gui/widgets_extend/toggle_swticher_toggled.png");
     private static final ResourceLocation TOGGLE_TOGGLED_HIGHLIGHTED_TEXTURE = new ResourceLocation("catframe",
-            "textures/gui/widgets/toggle_swticher_toggled_highlighted.png");
+            "textures/gui/widgets_extend/toggle_swticher_toggled_highlighted.png");
 
     /**
      * 四态开关精灵 —— 与开启 / 关闭 × 普通 / 高亮一一对应：enabled / disabled
