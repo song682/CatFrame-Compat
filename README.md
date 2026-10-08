@@ -12,7 +12,8 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 
 - MCPatcherForge series (Except MCPatcherForge), e.g., NotFine, Angelica, OptiFuture: Support CTM methods to let it working on the json-modelized blocks.
 - MCPatcherForge (OptiFutrue <= 1.2.3): Because have 8 parameter and one useless parameter is cannot be removed, so this mod support is currently unavailable.
-- Right Proper MCPatcher: Support CTM methods to let it working on the json-modelized blocks.
+- OptiFuture: Support the Natural textures.
+- Right Proper MCPatcher: Support CTM methods to let it working on the json-modelized blocks, and natural textures. 
 
 > [!IMPORTANT]
 > Known Limitations       
