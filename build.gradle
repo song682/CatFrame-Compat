@@ -79,6 +79,16 @@ repositories {
         name "Jitpack"
         url "https://jitpack.io"
     }
+
+    maven {
+        name "GTNH TEAMS"
+        url "https://nexus.gtnewhorizons.com/repository/releases/"
+    }
+
+    maven {
+        name "Chromatic Tooltips"
+        url "https://slprime.github.io/ChromaticTooltips/"
+    }
 }
 
 dependencies {
@@ -112,6 +122,11 @@ dependencies {
     compileOnly "curse.maven:IngameIME-440032:5086826"
     compileOnly "maven.modrinth:angelica:2.2.15"
     compileOnly "curse.maven:FloatingItems-549437:3536678"
+    compileOnly "com.github.GTNewHorizons:Backhand:${project.backhand_ver}:dev"
+    // Chromatic Tooltips: optional rendering dependency for the tooltip compat
+    // mixins (TooltipHandler bridge). compileOnly only — the mod itself must be
+    // installed by the user for the compat layer to activate.
+    compileOnly "com.github.slprime:ChromaticTooltips:${project.chromatictooltips_ver}:dev"
     implementation fileTree(dir: 'lib', includes: ['*.jar'])
 }
 

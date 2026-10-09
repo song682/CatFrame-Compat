@@ -78,4 +78,14 @@ public class CompactBase {
     public static boolean isFloatingItemInstalled() {
         return Loader.isModLoaded("floatingitems");
     }
+
+    // Offhand support
+    public static boolean isBackhandInstalled() {
+        return Loader.isModLoaded("backhand");
+    }
+
+    // Tooltip support
+    public static boolean isChromaticTooltipsInstalled() {
+        return Loader.isModLoaded("chromatictooltips");
+    }
 }

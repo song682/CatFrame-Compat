@@ -23,6 +23,16 @@ public enum Mixins implements IMixins {
             )
             .setApplyIf(CompactBase::isItemPhysicInstalled)
             .setPhase(Phase.LATE)
+    ),
+
+    CHROMATIC_TOOLTIPS_COMPAT(
+        new MixinBuilder("Chromatic Tooltips rendering compatibility")
+            .addClientMixins(
+                "MixinGuiGraphicsExtractor",
+                "MixinAbstractContainerScreen"
+            )
+            .setApplyIf(() -> CompatConfig.chromaticTooltipsCompat && CompactBase.isChromaticTooltipsInstalled())
+            .setPhase(Phase.LATE)
     );
 
     private final MixinBuilder builder;

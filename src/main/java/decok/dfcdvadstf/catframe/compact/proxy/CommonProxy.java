@@ -6,11 +6,12 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
-import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
-import decok.dfcdvadstf.catframe.compact.tags.PineTags;
 import decok.dfcdvadstf.catframe.compact.notification.NotificationCommand;
 import decok.dfcdvadstf.catframe.compact.notification.NotificationDefinitions;
 import decok.dfcdvadstf.catframe.compact.notification.network.NotificationNetwork;
+import decok.dfcdvadstf.catframe.compact.offhand.BackHand;
+import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
+import decok.dfcdvadstf.catframe.compact.tags.PineTags;
 import decok.dfcdvadstf.catframe.language.LanguageScanner;
 import net.minecraft.server.MinecraftServer;
 
@@ -33,6 +34,12 @@ public class CommonProxy {
         // Master switch for the PineappleTags compatibility layer: when disabled,
         // tag-pool synchronization and tag queries are bypassed entirely.
         ItemPhysic.setEnabled(CompatConfig.itemPhysicCompat);
+
+        // Master switch for the Backhand compatibility layer: when disabled,
+        // the left-hand display bridge stays unregistered (client) and every
+        // detection returns false - the offhand then renders with the
+        // right-hand display transforms, the pre-bridge behavior.
+        BackHand.setEnabled(CompatConfig.backhandCompat);
 
         // The mods directory sits next to the config directory; this also holds in dev.
         ItemPhysic.scan(new File(event.getModConfigurationDirectory().getParentFile(), "mods"));

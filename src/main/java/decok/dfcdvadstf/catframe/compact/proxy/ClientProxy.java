@@ -7,6 +7,7 @@ import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.RPCTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.NaturalExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.RPNaturalExtension;
+import decok.dfcdvadstf.catframe.compact.offhand.BackhandDisplayExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackRegistry;
@@ -64,6 +65,23 @@ public class ClientProxy extends CommonProxy {
 
         }
 
+        // ── Backhand left-hand display bridge ──
+        // Backhand replays the whole first/third-person hand pass under a mirrored
+        // GL state, under which the vanilla/Forge anchor chain auto-conjugates into
+        // the left-hand anchor; this bridge then replaces the builtin
+        // DisplayTransformExtension's right-hand matrix with the model's authored
+        // left-hand entry (firstperson_lefthand / thirdperson_lefthand, or the
+        // vanilla-convention default) for the offhand passes only - everything else
+        // (animations, arm anchor, preTransform cancellation) stays Backhand's and
+        // CatFrame's. Registered at the mod default priority 0, i.e. after the
+        // builtin chain head, so it overwrites the right-hand matrix (last writer
+        // wins). Class-loading isolation: registered only when Backhand is present,
+        // so the linked BackhandUtils API is never touched without it.
+        if (CompatConfig.backhandCompat && CompactBase.isBackhandInstalled()) {
+            ModelRenderExtensions.register(BackhandDisplayExtension.INSTANCE);
+            logger.info("Backhand left-hand display bridge enabled (Backhand detected).");
+        }
+
         // RPMCP (Right Proper MCPatcher) Natural Textures bridge: writes per-position
         // UV rotation/flip into the native RenderContext.uvOverride channel (CatFrame
         // >= 0.9.4). Same class-loading isolation and detection gate as the CTM bridge;
@@ -83,6 +101,14 @@ public class ClientProxy extends CommonProxy {
         if (CompatConfig.naturalTexturesEnabled && CompactBase.isOptiFutureNaturalAvailable()) {
             ModelRenderExtensions.register(NaturalExtension.INSTANCE);
             logger.info("OptiFuture Natural Textures bridge enabled (OptiFuture detected).");
+        }
+
+        // ── Chromatic Tooltips rendering bridge ──
+        // The actual redirection lives in the late mixins (MixinGuiGraphicsExtractor /
+        // MixinAbstractContainerScreen) gated by the same detection + config; this only
+        // reports activation so the state is visible in the log like the other bridges.
+        if (CompatConfig.chromaticTooltipsCompat && CompactBase.isChromaticTooltipsInstalled()) {
+            logger.info("Chromatic Tooltips rendering bridge enabled (Chromatic Tooltips detected).");
         }
 
         // ── Notification system: register the manager as a HUD+SCREEN overlay ──

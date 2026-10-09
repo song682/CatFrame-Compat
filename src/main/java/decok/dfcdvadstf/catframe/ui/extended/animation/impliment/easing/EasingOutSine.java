@@ -1,8 +1,8 @@
 package decok.dfcdvadstf.catframe.ui.extended.animation.impliment.easing;
 
-import java.util.function.Consumer;
-
 import decok.dfcdvadstf.catframe.ui.components.events.GuiEventListener;
+
+import java.util.function.Consumer;
 
 /**
  * Sine Out easing animation. / Sine Out 缓动动画。

@@ -1,11 +1,11 @@
 package decok.dfcdvadstf.catframe.ui.extended.animation.impliment.easing;
 
-import java.util.function.Consumer;
-
 import decok.dfcdvadstf.catframe.ui.components.events.GuiEventListener;
 import decok.dfcdvadstf.catframe.ui.extended.animation.AbstractAnimation;
 import decok.dfcdvadstf.catframe.ui.extended.animation.engine.GlState;
 import decok.dfcdvadstf.catframe.ui.extended.animation.impliment.EasingFunction;
+
+import java.util.function.Consumer;
 
 /**
  * <p>

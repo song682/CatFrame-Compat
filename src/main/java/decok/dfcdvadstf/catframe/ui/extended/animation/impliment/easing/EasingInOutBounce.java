@@ -1,8 +1,8 @@
 package decok.dfcdvadstf.catframe.ui.extended.animation.impliment.easing;
 
-import java.util.function.Consumer;
-
 import decok.dfcdvadstf.catframe.ui.components.events.GuiEventListener;
+
+import java.util.function.Consumer;
 
 /**
  * Bounce In-Out easing animation. / Bounce In-Out 缓动动画。

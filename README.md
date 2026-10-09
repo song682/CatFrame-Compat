@@ -33,7 +33,17 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 - FloatingItems: Developing...
 
 ## 5. Offhand Compat
-- Backhand: Let the catframe hand things render correctly in the offhand/left hand (For right-handed person, but for the left-handed person is right hand. Developing...)
+- Backhand (GTNH edition 1.8.x): Let the CatFrame hand things render correctly in the offhand/left hand (For right-handed person, but for the left-handed person is right hand). 
+  Backhand replays the whole hand pass under a mirrored GL state, under which the vanilla/Forge anchor chain auto-conjugates into the left-hand anchor; the bridge — a pure `IModelRenderExtension` on CatFrame's public extension chain — then replaces the builtin display transform with the modern (26.1.2) left-hand matrix for the offhand passes only: resolve the authored `firstperson_lefthand` / `thirdperson_lefthand` entry, falling back to the corresponding right-hand entry verbatim (`ItemTransforms.Deserializer` semantics), then negate `translation.x / rotation.y / rotation.z` (`ItemTransform.apply` left-hand fix). 
+  Animations, arm anchor and the preTransform cancellation all stay Backhand's and CatFrame's. The item keeps Backhand's mirrored chirality; the lateral position deviates from exact-modern by `2×translation.x` (invisible for vanilla-convention models) because Backhand's outer mirror is forced GL state.    
+  
+> [!IMPORTANT]
+> Known upstream limitations (reported, fixed on the CatFrame core side; this bridge does not patch them):    
+> **Third-person offhand block items**: CatFrame's `RenderJsonItemModel.resolveHeadSlotKind` keys head-slot ownership off `stack != entity.getHeldItem()`, and Backhand's third-person pass does no slot swap, so an `ItemBlock` held in the offhand is misclassified as a head-slot render (`ITEM_HEAD` phase + head preTransform) and renders misplaced until the CatFrame core learns to distinguish the offhand.    
+> **Builtin generated model data**: CatFrame's builtin `generated` carries a placeholder `firstperson_lefthand` with rotation `{0, 0, 0}`; modern `generated.json` authors **no** left-hand entry at all (the verbatim right-hand fallback above is the mechanism), so the placeholder should be removed upstream — until then the bridge honors it as authored data and generated-style items face wrong in the offhand first person.
+
+## 6. Tooltip Compat
+- Chromatic Tooltips: Allow Chromatic tooltips rendering on the modern screen.
 
 # Tools
 ## Model

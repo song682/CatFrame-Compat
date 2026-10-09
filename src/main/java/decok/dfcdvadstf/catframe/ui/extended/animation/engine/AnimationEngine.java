@@ -1,8 +1,7 @@
 package decok.dfcdvadstf.catframe.ui.extended.animation.engine;
 
-import org.lwjgl.opengl.GL11;
-
 import decok.dfcdvadstf.catframe.ui.extended.animation.Animation;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.Iterator;
