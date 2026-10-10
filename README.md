@@ -47,7 +47,7 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 > **Third-person offhand block items**: CatFrame's `RenderJsonItemModel.resolveHeadSlotKind` keys head-slot ownership off `stack != entity.getHeldItem()`, and Backhand's third-person pass does no slot swap, so an `ItemBlock` held in the offhand is misclassified as a head-slot render (`ITEM_HEAD` phase + head preTransform) and renders misplaced until the CatFrame core learns to distinguish the offhand.    
 > **Builtin generated model data**: CatFrame's builtin `generated` carries a placeholder `firstperson_lefthand` with rotation `{0, 0, 0}`; modern `generated.json` authors **no** left-hand entry at all (the verbatim right-hand fallback above is the mechanism), so the placeholder should be removed upstream — until then the bridge honors it as authored data and generated-style items face wrong in the offhand first person.
 > 
-> ## Better Foliage
+> ## Better Foliage ([Issue #9](https://github.com/song682/CatFrame-Compat/issues/6))
 > 
 > **Not planned.** Better Foliage - Legacy Edition installs its render override inside the body of `RenderBlocks.renderBlockByRenderType`, while CatFrame intercepts that method at its entry for every block it hosts — so on those blocks (vanilla leaves, logs, grass, sand, etc.) Better Foliage's features (Extra Leaves, Round Logs, etc.) never execute.
 > Both mods want to draw the same blocks, and each block's appearance can only come from one pipeline — making Better Foliage render these blocks would mean yielding them entirely to it, at the cost of CatFrame's rendering on them (CTM, Natural textures, render extensions).
