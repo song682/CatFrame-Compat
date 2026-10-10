@@ -140,7 +140,7 @@ dependencies {
     // installed by the user for the compat layer to activate.
     compileOnly "com.github.slprime:ChromaticTooltips:${project.chromatictooltips_ver}:dev"
     implementation fileTree(dir: 'lib', includes: ['*.jar'],
-
+            excludes: ['Backhand-1.8.16-dev.jar']
     )
 }
 
