@@ -31,7 +31,7 @@ public enum Mixins implements IMixins {
                 "MixinGuiGraphicsExtractor",
                 "MixinAbstractContainerScreen"
             )
-            .setApplyIf(() -> CompatConfig.chromaticTooltipsCompat & CompactBase.isChromaticTooltipsInstalled())
+            .setApplyIf(() -> CompatConfig.chromaticTooltipsCompat && CompactBase.isChromaticTooltipsInstalled())
             .setPhase(Phase.LATE)
     );
 
