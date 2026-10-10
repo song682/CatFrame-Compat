@@ -37,8 +37,8 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 > ## Known Limitations
 > ### CTM Part
 > 
-> **Glass Pane CTM Corner Connection (ANCP vs MNOP)**: When using CTM on glass panes, the corner connections may display incorrect variants (e.g., ANCP instead of MNOP). 
-> This is an architectural limitation: CatFrame's VMM rendering bypasses the specialized pane rendering logic (PaneRenderHelper/GlassPaneRenderer) that handles thin-pane connectivity via `canPaneConnectToBlock`. 
+> **Glass Pane CTM Corner Connection**: When using CTM on glass panes, the corner connections may display incorrect variants. 
+> This is a limitation: CatFrame's VMM rendering bypasses the specialized pane rendering logic (PaneRenderHelper/GlassPaneRenderer) that handles thin-pane connectivity. 
 > The CTM engine uses generic neighbor detection which doesn't account for pane thin-plate geometry. Basic pane CTM connections work correctly; only corner/edge variants may be inaccurate.        
 > Fixed via the built-in texture packs.
 >
@@ -52,6 +52,8 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 > **Not planned.** Better Foliage - Legacy Edition installs its render override inside the body of `RenderBlocks.renderBlockByRenderType`, while CatFrame intercepts that method at its entry for every block it hosts — so on those blocks (vanilla leaves, logs, grass, sand, etc.) Better Foliage's features (Extra Leaves, Round Logs, etc.) never execute.
 > Both mods want to draw the same blocks, and each block's appearance can only come from one pipeline — making Better Foliage render these blocks would mean yielding them entirely to it, at the cost of CatFrame's rendering on them (CTM, Natural textures, render extensions).
 > That trade-off is declined, so this compatibility is not planned; Better Foliage keeps working on blocks CatFrame does not host (e.g., modded leaves).
+> 
+> > PRs that break these limitation are welcomed.
 
 # Tools
 ## Model

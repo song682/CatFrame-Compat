@@ -61,8 +61,6 @@ public class ClientProxy extends CommonProxy {
                 logger.info("RPMCP CTM bridge enabled (Right Proper MCPatcher detected).");
                 BuiltinPackRegistry.register(FIX_GLASS_PANE);
             }
-
-
         }
 
         // ── Backhand left-hand display bridge ──
