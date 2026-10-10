@@ -81,11 +81,6 @@ repositories {
     }
 
     maven {
-        name "GTNH TEAMS"
-        url "https://nexus.gtnewhorizons.com/repository/releases/"
-    }
-
-    maven {
         name "Chromatic Tooltips"
         url "https://slprime.github.io/ChromaticTooltips/"
     }
@@ -122,12 +117,31 @@ dependencies {
     compileOnly "curse.maven:IngameIME-440032:5086826"
     compileOnly "maven.modrinth:angelica:2.2.15"
     compileOnly "curse.maven:FloatingItems-549437:3536678"
-    compileOnly "com.github.GTNewHorizons:Backhand:${project.backhand_ver}:dev"
+    // Backhand (GTNH edition, MIT) API: linked directly, compile-time verified.
+    // Same situation as IngameIME above: the remote artifact (the GTNH nexus)
+    // is not a reliable source for CI builds — JitPack's default Java 8 cannot
+    // fetch from nexus.gtnewhorizons.com (old TLS stack), and a failed fetch
+    // makes JitPack retry the build with a newer JDK (observed: Java 17), where
+    // the ForgeGradle 1.2 / 1.7.10 toolchain cannot run at all. So the dev jar
+    // is vendored into lib/ (the nexus artifact Backhand-1.8.16-dev.jar) and
+    // referenced locally; it must stay compileOnly — it is a full mod jar
+    // (dev-deobf), and landing on the runtime classpath would shadow the copy
+    // installed in mods/.
+    // Backhand（GTNH 版，MIT）API：直接链接、编译期校验。同上面 IngameIME 的处境：
+    // 远程构件（GTNH nexus）对 CI 构建不可靠——JitPack 默认的 Java 8 拉不动该
+    // 仓库（旧 TLS 栈），拉取失败会让 JitPack 换新 JDK 重试构建（实测：Java 17），
+    // 而 ForgeGradle 1.2 / 1.7.10 工具链在新 JVM 上根本无法构建。因此把 dev jar
+    // vendor 进 lib/（nexus 构件 Backhand-1.8.16-dev.jar）改为本地引用；且必须保持
+    // compileOnly——它是完整 mod jar（dev 反混淆版），进运行时 classpath 会在 mods/
+    // 里已安装的副本之外再挂一份。
+    compileOnly files('lib/Backhand-1.8.16-dev.jar')
     // Chromatic Tooltips: optional rendering dependency for the tooltip compat
     // mixins (TooltipHandler bridge). compileOnly only — the mod itself must be
     // installed by the user for the compat layer to activate.
     compileOnly "com.github.slprime:ChromaticTooltips:${project.chromatictooltips_ver}:dev"
-    implementation fileTree(dir: 'lib', includes: ['*.jar'])
+    implementation fileTree(dir: 'lib', includes: ['*.jar'],
+
+    )
 }
 
 def dependenciesList = []
