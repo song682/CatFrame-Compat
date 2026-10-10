@@ -1,0 +1,6 @@
+# JitPack must build this project on Java 8: the ForgeGradle 1.2 / 1.7.10
+# toolchain cannot run on newer JVMs at all. Without this pin, a failed build
+# (e.g. a dependency fetch failure) makes JitPack retry with a newer JDK
+# (observed: Java 17), where the build can never succeed - keep this pinned.
+jdk:
+  - openjdk8
