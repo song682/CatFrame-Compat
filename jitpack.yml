@@ -4,3 +4,6 @@
 # (observed: Java 17), where the build can never succeed - keep this pinned.
 jdk:
   - openjdk8
+
+before_install:
+  - ./gradlew setupCIWorkspace
