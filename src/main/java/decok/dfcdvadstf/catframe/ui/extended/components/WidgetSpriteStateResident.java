@@ -8,6 +8,7 @@ public class WidgetSpriteStateResident {
     private final ResourceLocation selected;
     private final ResourceLocation highlighted;
     private final ResourceLocation selectedHighlighted;
+    private final int type = 0;
 
     public WidgetSpriteStateResident(ResourceLocation sprite) {
         this(sprite, sprite, sprite, sprite);

@@ -2,8 +2,5 @@
   "required": true,
   "package": "decok.dfcdvadstf.catframe.compact.mixin.middle",
   "refmap": "mixins.catframe_compact.refmap.json",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [],
-  "client": [],
-  "server": []
+  "compatibilityLevel": "JAVA_8"
 }

@@ -3,8 +3,6 @@ package decok.dfcdvadstf.catframe.compact.proxy;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
-import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CTMRenderExtension;
-import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.RPCTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.NaturalExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.RPNaturalExtension;
 import decok.dfcdvadstf.catframe.compact.offhand.BackhandDisplayExtension;
