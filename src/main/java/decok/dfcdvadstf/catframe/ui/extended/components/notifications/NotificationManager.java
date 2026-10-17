@@ -2,28 +2,31 @@ package decok.dfcdvadstf.catframe.ui.extended.components.notifications;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import decok.dfcdvadstf.catframe.ui.GuiGraphicsExtractor;
-import decok.dfcdvadstf.catframe.ui.components.AbstractComponent;
-import decok.dfcdvadstf.catframe.ui.overlay.Overlay;
-import decok.dfcdvadstf.catframe.ui.overlay.OverlayContext;
-import decok.dfcdvadstf.catframe.ui.overlay.OverlayManager;
-import decok.dfcdvadstf.catframe.ui.overlay.ScreenAnchor;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * <p>
- * Client-side notification manager — singleton that manages the notification queue,
- * the list of actively animating notifications, and serves as the single
- * {@link Overlay} registered with {@link OverlayManager} for rendering.<br>
+ * Client-side notification manager — singleton that owns the notification queue,
+ * the list of actively animating notifications, and the per-tick lifecycle logic.<br>
+ * It is deliberately decoupled from the CatFrame overlay system: this class holds no
+ * {@code Overlay} contract and knows nothing about registration or anchors. The thin
+ * {@link NotificationOverlay} plugs it into the {@link decok.dfcdvadstf.catframe.ui.overlay.OverlayManager}
+ * and forwards tick/render calls here.<br>
  * At most {@value #MAX_VISIBLE} notifications are shown simultaneously.
  * Additional notifications are held in a pending queue and promoted as slots open up.
  * </p>
  * <p>
- * 客户端通知管理器 —— 单例，管理通知队列、活跃动画通知列表，并作为注册到
- * {@link OverlayManager} 的单个 {@link Overlay} 进行渲染。<br>
- * 最多同时显示 {@value #MAX_VISIBLE} 条通知。额外通知保存在等待队列中，
- * 待有空位时提升。
+ * 客户端通知管理器 —— 单例，管理通知队列、活跃动画通知列表与每 tick 的生命周期逻辑。<br>
+ * 它与 CatFrame Overlay 系统刻意解耦：本类不实现 {@code Overlay} 契约，也完全不关心注册或锚点。
+ * 轻量的 {@link NotificationOverlay} 负责将其接入
+ * {@link decok.dfcdvadstf.catframe.ui.overlay.OverlayManager}，并把 tick / 渲染调用转发到这里。<br>
+ * 最多同时显示 {@value #MAX_VISIBLE} 条通知。额外通知保存在等待队列中，待有空位时提升。
  * </p>
  *
  * <h3>Usage / 用法</h3>
@@ -38,18 +41,18 @@ import java.util.*;
  *
  * <h3>Registration / 注册</h3>
  * <p>
- * Call {@link #register()} during client pre-init to register this manager as a
- * HUD + SCREEN overlay with the CatFrame {@link OverlayManager}. The existing
- * {@code ClientOverlayHandler} drives tick and render for all overlays.
+ * Register {@link NotificationOverlay#INSTANCE} during client pre-init; it wires this
+ * manager into the CatFrame {@code OverlayManager}. The existing
+ * {@code ClientOverlayHandler} then drives tick and render for all overlays.
  * </p>
  * <p>
- * 在客户端 preInit 期间调用 {@link #register()}，将本管理器作为 HUD + SCREEN
- * Overlay 注册到 CatFrame 的 {@link OverlayManager}。已有的 {@code ClientOverlayHandler}
- * 负责驱动所有 Overlay 的 tick 与渲染。
+ * 在客户端 preInit 期间注册 {@link NotificationOverlay#INSTANCE}，将本管理器接入
+ * CatFrame 的 {@code OverlayManager}。已有的 {@code ClientOverlayHandler} 随后负责驱动
+ * 所有 Overlay 的 tick 与渲染。
  * </p>
  */
 @SideOnly(Side.CLIENT)
-public final class NotificationManager extends AbstractComponent implements Overlay {
+public final class NotificationManager {
 
     /** Singleton instance. / 单例实例。 */
     public static final NotificationManager INSTANCE = new NotificationManager();
@@ -101,45 +104,23 @@ public final class NotificationManager extends AbstractComponent implements Over
     }
 
     /**
-     * Register this manager with the CatFrame {@link OverlayManager}.
-     * Call once during client pre-init.
-     * <p>将本管理器注册到 CatFrame 的 {@link OverlayManager}。在客户端 preInit 调用一次。</p>
+     * @return {@code true} while at least one notification is on screen or queued.
+     * <p>屏幕上有通知或队列非空时返回 {@code true}。</p>
      */
-    public void register() {
-        OverlayManager.INSTANCE.register(this);
+    public boolean isActive() {
+        return !active.isEmpty() || !pending.isEmpty();
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  Overlay implementation
+    //  Lifecycle
     // ══════════════════════════════════════════════════════════════════════
-
-    @Override
-    public OverlayContext getContext() {
-        return OverlayContext.BOTH;
-    }
-
-    @Override
-    public ScreenAnchor getAnchor() {
-        return ScreenAnchor.TOP_RIGHT;
-    }
-
-    @Override
-    public int getOffsetX() {
-        return 0;
-    }
-
-    @Override
-    public int getOffsetY() {
-        return 0;
-    }
 
     /**
      * Advance all active animations and promote pending notifications into empty slots.
-     * Called by {@link OverlayManager#updateAll()} every client tick.
-     * <p>推进所有活跃动画并将等待中的通知提升到空槽位。由 {@link OverlayManager#updateAll()}
-     * 每客户端 tick 调用。</p>
+     * Called by {@link NotificationOverlay#update()} every client tick.
+     * <p>推进所有活跃动画并将等待中的通知提升到空槽位。
+     * 由 {@link NotificationOverlay#update()} 每客户端 tick 调用。</p>
      */
-    @Override
     public void update() {
         // Advance animations and remove finished ones
         Iterator<ActiveNotification> it = active.iterator();
@@ -155,9 +136,6 @@ public final class NotificationManager extends AbstractComponent implements Over
         while (active.size() < MAX_VISIBLE && !pending.isEmpty()) {
             active.add(new ActiveNotification(pending.pollFirst()));
         }
-
-        // Visibility: OverlayManager only renders when isVisible() returns true
-        this.visible = !active.isEmpty();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -166,12 +144,11 @@ public final class NotificationManager extends AbstractComponent implements Over
 
     /**
      * Render all active notification cards via {@link NotificationRenderer}.
-     * Called by {@link OverlayManager} through the standard render pipeline.
+     * Called by {@link NotificationOverlay} through the standard render pipeline.
      * <p>通过 {@link NotificationRenderer} 渲染所有活跃通知卡片。
-     * 由 {@link OverlayManager} 经标准渲染管线调用。</p>
+     * 由 {@link NotificationOverlay} 经标准渲染管线调用。</p>
      */
-    @Override
-    protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+    public void render() {
         if (active.isEmpty()) {
             return;
         }

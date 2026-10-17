@@ -3,13 +3,15 @@ package decok.dfcdvadstf.catframe.compact.proxy;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CTMRenderExtension;
+import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.RPCTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.NaturalExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.RPNaturalExtension;
 import decok.dfcdvadstf.catframe.compact.offhand.BackhandDisplayExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackRegistry;
-import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationManager;
+import decok.dfcdvadstf.catframe.ui.extended.components.notifications.NotificationOverlay;
 import decok.dfcdvadstf.catframe.ui.extended.theme.JsonThemeLoader;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeCommand;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeKeyHandler;
@@ -107,10 +109,10 @@ public class ClientProxy extends CommonProxy {
             logger.info("Chromatic Tooltips rendering bridge enabled (Chromatic Tooltips detected).");
         }
 
-        // ── Notification system: register the manager as a HUD+SCREEN overlay ──
+        // ── Notification system: register the overlay that wraps the manager ──
         // The CatFrame core ClientOverlayHandler already drives OverlayManager tick/render
         // via Forge events; we only need to register our notification overlay.
-        NotificationManager.INSTANCE.register();
+        NotificationOverlay.INSTANCE.register();
     }
 
 }

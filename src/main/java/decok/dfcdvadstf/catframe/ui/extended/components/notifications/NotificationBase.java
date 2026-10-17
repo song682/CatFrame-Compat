@@ -10,14 +10,15 @@ import decok.dfcdvadstf.catframe.ui.overlay.ScreenAnchor;
  * Concrete, mutable {@link Notification} implementation with a fluent {@link Builder}.<br>
  * Also implements {@link Overlay} for type compatibility with the CatFrame overlay system;
  * however, notifications are not individually registered with the {@code OverlayManager}.
- * Instead, the {@link NotificationManager} (itself a single Overlay) manages their lifecycle
- * and delegates rendering to {@link NotificationRenderer}.
+ * Instead, the {@link NotificationManager} owns their lifecycle and delegates rendering to
+ * {@link NotificationRenderer}, while {@link NotificationOverlay} is the single Overlay that
+ * plugs the manager into the overlay pipeline.
  * </p>
  * <p>
  * 具体、可变的 {@link Notification} 实现，附带流利的 {@link Builder}。<br>
  * 同时实现 {@link Overlay} 以保持与 CatFrame Overlay 系统的类型兼容；但通知不会逐个注册到
- * {@code OverlayManager}。{@link NotificationManager}（自身为单个 Overlay）统一管理其生命周期，
- * 并将渲染委托给 {@link NotificationRenderer}。
+ * {@code OverlayManager}。{@link NotificationManager} 统一管理其生命周期，并将渲染委托给
+ * {@link NotificationRenderer}；{@link NotificationOverlay} 则是将管理器接入渲染管线的唯一 Overlay。
  * </p>
  *
  * <h3>Usage / 用法</h3>
@@ -169,8 +170,8 @@ public class NotificationBase extends AbstractComponent implements Notification,
 
     // ──── Overlay implementation ────
     // NotificationBase implements Overlay for type compatibility.
-    // It is NOT individually registered with OverlayManager; NotificationManager
-    // is the single Overlay that manages all active notifications.
+    // It is NOT individually registered with OverlayManager; NotificationOverlay
+    // is the single Overlay that drives NotificationManager's active notifications.
 
     @Override
     public ScreenAnchor getAnchor() {
