@@ -1,5 +1,6 @@
 package decok.dfcdvadstf.catframe.ui.extended.components.notifications;
 
+import decok.dfcdvadstf.catframe.ui.GuiGraphicsExtractor;
 import decok.dfcdvadstf.catframe.ui.components.AbstractComponent;
 import decok.dfcdvadstf.catframe.ui.overlay.Overlay;
 import decok.dfcdvadstf.catframe.ui.overlay.OverlayContext;
@@ -199,6 +200,24 @@ public class NotificationBase extends AbstractComponent implements Notification,
     }
 
     // ──── AbstractComponent overrides ────
+
+    /**
+     * <p>
+     * Drawing hook of the {@code AbstractComponent} template method. A notification is never
+     * painted as a component of its own: {@link NotificationRenderer} draws the cards and
+     * {@link NotificationOverlay} is the single overlay routed through the pipeline, so this
+     * hook intentionally draws nothing.
+     * </p>
+     * <p>
+     * {@code AbstractComponent} 模板方法的绘制钩子。通知本身不作为独立组件绘制：
+     * 卡片由 {@link NotificationRenderer} 绘制，{@link NotificationOverlay} 是唯一接入渲染管线的
+     * Overlay，因此此处不绘制任何内容。
+     * </p>
+     */
+    @Override
+    protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+        // Intentionally empty — see NotificationRenderer / NotificationOverlay.
+    }
 
     @Override
     public boolean isVisible() {

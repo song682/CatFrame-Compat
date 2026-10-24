@@ -2,7 +2,6 @@ package decok.dfcdvadstf.catframe.compact.mixin.late;
 
 import decok.dfcdvadstf.catframe.compact.physic.ItemPhysic;
 import decok.dfcdvadstf.catframe.model.BakedModelCache;
-import decok.dfcdvadstf.catframe.model.IItemStateProvider;
 import decok.dfcdvadstf.catframe.model.ModelRegistry;
 import decok.dfcdvadstf.catframe.model.core.baking.JsonModelBake;
 import decok.dfcdvadstf.catframe.model.render.RenderJsonItemModel;
@@ -47,7 +46,7 @@ import java.util.Map;
  * ({@code preTransform × transformation × display}) before handing the
  * vertices to the Tessellator, so the rotation is injected the same way: this
  * Mixin rewrites the {@code preTransform} argument of the single
- * {@code IItemStateProvider#render(stack, phase, preTransform)} call inside
+ * {@code ItemStateModel#render(stack, phase, preTransform)} call inside
  * {@link RenderJsonItemModel#renderItem} to {@code R × preTransform}. For
  * {@code ItemRenderType.ENTITY} that pre-transform is a pure uniform
  * {@code scale(2.0)} (it cancels Forge's {@code scale(0.5)}), so it commutes
@@ -141,7 +140,7 @@ public abstract class MixinItemPhysics {
             method = "renderItem(Lnet/minecraftforge/client/IItemRenderer$ItemRenderType;Lnet/minecraft/item/ItemStack;[Ljava/lang/Object;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Ldecok/dfcdvadstf/catframe/model/IItemStateProvider;render(Lnet/minecraft/item/ItemStack;Ldecok/dfcdvadstf/catframe/model/render/api/RenderPhase;Ljavax/vecmath/Matrix4d;)V",
+                    target = "Ldecok/dfcdvadstf/catframe/model/state/item/ItemStateModel;render(Lnet/minecraft/item/ItemStack;Ldecok/dfcdvadstf/catframe/model/render/api/RenderPhase;Ljavax/vecmath/Matrix4d;)V",
                     remap = false),
             index = 2,
             remap = false)
@@ -382,9 +381,9 @@ public abstract class MixinItemPhysics {
      */
     @Nullable
     private static Boolean catframecompact$isFlatItemGeometry(ItemStack stack) {
-        IItemStateProvider provider = ModelRegistry.getRegisteredItemModel(stack.getItem());
-        if (!(provider instanceof ItemStateModel)) return null;
-        ItemStateNode root = ((ItemStateModel) provider).getRootNode();
+        ItemStateModel model = ModelRegistry.getRegisteredItemModel(stack.getItem());
+        if (model == null) return null;
+        ItemStateNode root = model.getRootNode();
         if (root == null) return null;
 
         // Same phase RenderJsonItemModel.toRenderPhase(ENTITY, stack) selects.
