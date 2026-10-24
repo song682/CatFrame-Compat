@@ -34,61 +34,30 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 - Chromatic Tooltips: Allow Chromatic tooltips rendering on the modern screen.
 - NotEnoughItems (Unofficial, GTNH edition): Keeps NEI's single tooltip frame while CatFrame's structured tooltip components (e.g. the bundle grid) are rendered inside it, instead of the two mods stacking two frames.
 
-<details>  
-<summary>Click to see the limitation</summary>  
+## Known Limitations
+### CTM Part
+ **Glass Pane CTM Corner Connection**: When using CTM on glass panes, the corner connections may display incorrect variants.
+This is a limitation: CatFrame's VMM rendering bypasses the specialized pane rendering logic (PaneRenderHelper/GlassPaneRenderer) that handles thin-pane connectivity.
+The CTM engine uses generic neighbor detection which doesn't account for pane thin-plate geometry. Basic pane CTM connections work correctly; only corner/edge variants may be inaccurate.        
+Fixed via the built-in texture packs.
+## Backhand
+**Third-person offhand block items**: CatFrame's `RenderJsonItemModel.resolveHeadSlotKind` keys head-slot ownership off `stack != entity.getHeldItem()`, and Backhand's third-person pass does no slot swap, so an `ItemBlock` held in the offhand is misclassified as a head-slot render (`ITEM_HEAD` phase + head preTransform) and renders misplaced until the CatFrame core learns to distinguish the offhand.    
 
-> [!IMPORTANT]
-> ## Known Limitations
-> ### CTM Part
->
-> **Glass Pane CTM Corner Connection**: When using CTM on glass panes, the corner connections may display incorrect variants.
-> This is a limitation: CatFrame's VMM rendering bypasses the specialized pane rendering logic (PaneRenderHelper/GlassPaneRenderer) that handles thin-pane connectivity.
-> The CTM engine uses generic neighbor detection which doesn't account for pane thin-plate geometry. Basic pane CTM connections work correctly; only corner/edge variants may be inaccurate.        
-> Fixed via the built-in texture packs.
->
-> ## Backhand
->
-> **Third-person offhand block items**: CatFrame's `RenderJsonItemModel.resolveHeadSlotKind` keys head-slot ownership off `stack != entity.getHeldItem()`, and Backhand's third-person pass does no slot swap, so an `ItemBlock` held in the offhand is misclassified as a head-slot render (`ITEM_HEAD` phase + head preTransform) and renders misplaced until the CatFrame core learns to distinguish the offhand.    
-> **Builtin generated model data**: CatFrame's builtin `generated` carries a placeholder `firstperson_lefthand` with rotation `{0, 0, 0}`; modern `generated.json` authors **no** left-hand entry at all (the verbatim right-hand fallback above is the mechanism), so the placeholder should be removed upstream — until then the bridge honors it as authored data and generated-style items face wrong in the offhand first person.
->
-> ## Better Foliage ([Issue #6](https://github.com/song682/CatFrame-Compat/issues/6))
->
-> **Not planned.** Better Foliage - Legacy Edition installs its render override inside the body of `RenderBlocks.renderBlockByRenderType`, while CatFrame intercepts that method at its entry for every block it hosts — so on those blocks (vanilla leaves, logs, grass, sand, etc.) Better Foliage's features (Extra Leaves, Round Logs, etc.) never execute.
-> Both mods want to draw the same blocks, and each block's appearance can only come from one pipeline — making Better Foliage render these blocks would mean yielding them entirely to it, at the cost of CatFrame's rendering on them (CTM, Natural textures, render extensions).
-> That trade-off is declined, so this compatibility is not planned; Better Foliage keeps working on blocks CatFrame does not host (e.g., modded leaves).
->
-> ## NotEnoughItems (Tooltip Part)
->
-> **Why a bridge is needed.** NEI rewrites the `renderToolTip` call site inside `GuiContainer.drawScreen` with an
-> ASM `MethodReplacer`, so CatFrame's own `renderToolTip` override never runs - while CatFrame's `extractTooltip`
-> still queues its deferred nine-slice tooltip. The result is two frames with the same text.
-> Text lines need no work at all: NEI resolves them through `ItemStack.getTooltip`, so everything contributed via
-> `ItemTooltipEvent` (including this mod's tag tooltips) is already shared. Only the frame and the structured
-> components are affected.
->
-> **What the bridge does.** At post-init it registers ahead-of-the-item-tooltip hook with NEI
-> (`GuiContainerManager.addTooltipHandler`). When the hovered stack has a CatFrame tooltip component
-> (`ItemTooltipImages`, e.g. the bundle grid), the component is wrapped into a CodeChickenLib line handler
-> (`GuiDraw.TOOLTIP_HANDLER` + `GuiDraw.getTipLineId`) and inserted at index 1, i.e. right under the item name -
-> the same slot CatFrame uses. The frame is then flagged as NEI-owned and a late mixin cancels CatFrame's
-> `extractTooltip` for that frame, so exactly one frame is painted.
->
-> The bridge is not screen-scoped: components are also injected in *other* mods' container GUIs, where NEI is
-> already the tooltip renderer. Only the cancellation is screen-scoped (CatFrame screens are the only ones that
-> would paint a second frame).
->
-> **When Chromatic Tooltips is installed** it wins: CT replaces the tooltip wholesale and draws it on
-> `DrawScreenEvent.Post`, after NEI's frame, so the two cannot be merged. The bridge then suppresses NEI's
-> container tooltip on CatFrame screens (`IContainerObjectHandler.shouldShowTooltip`) instead of translating
-> components into it, and CT renders everything.
->
-> **Configuration.** `enableNeiTooltipsCompat` in `config/CatFrameCompat.cfg` (General, default `true`). Set it to
-> `false` and CatFrame draws its own tooltip again - which leaves NEI running a second frame, i.e. the old broken
-> state. The bridge is additionally gated on `Loader.isModLoaded("NotEnoughItems")`, both for registration and for
-> the late mixin's `applyIf`, so NEI/CodeChickenLib types are never linked when NEI is absent.
->
-> ### Known limitations of this bridge
->
+## Better Foliage ([Issue #6](https://github.com/song682/CatFrame-Compat/issues/6))
+
+**Not planned.** Better Foliage - Legacy Edition installs its render override inside the body of `RenderBlocks.renderBlockByRenderType`, while CatFrame intercepts that method at its entry for every block it hosts — so on those blocks (vanilla leaves, logs, grass, sand, etc.) Better Foliage's features (Extra Leaves, Round Logs, etc.) never execute.
+Both mods want to draw the same blocks, and each block's appearance can only come from one pipeline — making Better Foliage render these blocks would mean yielding them entirely to it, at the cost of CatFrame's rendering on them (CTM, Natural textures, render extensions).
+That trade-off is declined, so this compatibility is not planned; Better Foliage keeps working on blocks CatFrame does not host (e.g., modded leaves).
+
+## NotEnoughItems (Tooltip Part)
+
+**Why a bridge is needed.** NEI rewrites the `renderToolTip` call site inside `GuiContainer.drawScreen` with an ASM `MethodReplacer`, so CatFrame's own `renderToolTip` override never runs - while CatFrame's `extractTooltip` still queues its deferred nine-slice tooltip. The result is two frames with the same text.           
+Text lines need no work at all: NEI resolves them through `ItemStack.getTooltip`, so everything contributed via `ItemTooltipEvent` (including this mod's tag tooltips) is already shared. Only the frame and the structured components are affected.    
+**What the bridge does.** At post-init it registers ahead-of-the-item-tooltip hook with NEI (`GuiContainerManager.addTooltipHandler`). When the hovered stack has a CatFrame tooltip component (`ItemTooltipImages`, e.g. the bundle grid), the component is wrapped into a CodeChickenLib line handler (`GuiDraw.TOOLTIP_HANDLER` + `GuiDraw.getTipLineId`) and inserted at index 1, i.e. right under the item name - the same slot CatFrame uses. The frame is then flagged as NEI-owned and a late mixin cancels CatFrame's `extractTooltip` for that frame, so exactly one frame is painted. 
+The bridge is not screen-scoped: components are also injected in *other* mods' container GUIs, where NEI is already the tooltip renderer. Only the cancellation is screen-scoped (CatFrame screens are the only ones that would paint a second frame).
+
+**When Chromatic Tooltips is installed** it wins: CT replaces the tooltip wholesale and draws it on `DrawScreenEvent.Post`, after NEI's frame, so the two cannot be merged. The bridge then suppresses NEI's container tooltip on CatFrame screens (`IContainerObjectHandler.shouldShowTooltip`) instead of translating components into it, and CT renders everything.
+
 > **CatFrame's tooltip style and positioner are not applied.** NEI owns placement (`mousex + 12`, `mousey - 12`)
 > and paging in this setup; CatFrame's `TOOLTIP_STYLE` and `ClientTooltipPositioner` only take effect without NEI.
 >
@@ -104,13 +73,10 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 > **One rendering owner per screen.** With NEI present, NEI's frame is extended, not replaced: CatFrame cannot
 > re-add its own background/padding. With CT present, NEI's frame is suppressed instead of merged, so NEI-specific
 > parts of the item tooltip (its own handlers, count details) do not appear on CatFrame screens in that setup.
->
 > **Handlers are per-frame.** CodeChickenLib clears its line-handler table at the end of `drawMultilineTip`, so the
 > bridge builds a fresh handler and re-reads the line id on every frame; the marker cannot be cached across frames.
->
-> > PRs that break these limitation are welcomed.
 
-</details>
+> PRs that break these limitation are welcomed.
 
 # Tools
 ## Model
