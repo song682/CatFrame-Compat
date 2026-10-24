@@ -3,7 +3,7 @@ package decok.dfcdvadstf.catframe.compact.mixin.late;
 import decok.dfcdvadstf.catframe.compact.tooltips.ChromaticTooltips;
 import decok.dfcdvadstf.catframe.ui.GuiGraphicsExtractor;
 import decok.dfcdvadstf.catframe.ui.screens.Screen;
-import decok.dfcdvadstf.catframe.ui.tooltip.ClientTooltipPositioner;
+import decok.dfcdvadstf.catframe.ui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
@@ -52,7 +52,7 @@ public abstract class MixinGuiGraphicsExtractor {
      * widget 上下方）由 Chromatic Tooltips 的鼠标定位算法取代（官方 Compat 同此处理）。
      */
     @Inject(
-            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/FontRenderer;Ljava/util/List;Ljava/util/Optional;Ldecok/dfcdvadstf/catframe/ui/tooltip/ClientTooltipPositioner;IIZLnet/minecraft/util/ResourceLocation;)V",
+            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/FontRenderer;Ljava/util/List;Ljava/util/Optional;Ldecok/dfcdvadstf/catframe/ui/screens/inventory/tooltip/ClientTooltipPositioner;IIZLnet/minecraft/util/ResourceLocation;)V",
             at = @At("HEAD"), cancellable = true)
     private void catframecompact$chromaticWidgetTooltip(
             FontRenderer font, List<String> lines, Optional<?> component,

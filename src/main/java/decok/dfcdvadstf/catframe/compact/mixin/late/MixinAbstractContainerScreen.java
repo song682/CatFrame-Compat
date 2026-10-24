@@ -1,7 +1,7 @@
 package decok.dfcdvadstf.catframe.compact.mixin.late;
 
 import decok.dfcdvadstf.catframe.compact.tooltips.ChromaticTooltips;
-import decok.dfcdvadstf.catframe.core.tooltip.TooltipComponent;
+import decok.dfcdvadstf.catframe.world.tooltip.TooltipComponent;
 import decok.dfcdvadstf.catframe.ui.GuiGraphicsExtractor;
 import decok.dfcdvadstf.catframe.ui.screens.container.AbstractContainerScreen;
 import net.minecraft.client.gui.FontRenderer;

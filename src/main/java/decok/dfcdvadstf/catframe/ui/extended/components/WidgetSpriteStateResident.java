@@ -26,6 +26,10 @@ public class WidgetSpriteStateResident {
         this.selectedHighlighted = selectedHighlighted;
     }
 
+    public int getType() {
+        return this.type;
+    }
+
     public ResourceLocation get(boolean isSelected, boolean hoverOrFocused) {
         if (isSelected) {
             return hoverOrFocused ? this.selected : this.selectedHighlighted;

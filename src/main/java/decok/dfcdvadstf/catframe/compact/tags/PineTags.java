@@ -3,7 +3,7 @@ package decok.dfcdvadstf.catframe.compact.tags;
 import club.someoneice.togocup.tags.Tag;
 import club.someoneice.togocup.tags.TagsManager;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
-import decok.dfcdvadstf.catframe.tags.impl.CatFrameTags;
+import decok.dfcdvadstf.catframe.tags.TagManager;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -78,15 +78,15 @@ public class PineTags {
 
             for (Object element : ((Tag<?>) entry.getValue()).getList()) {
                 if (element instanceof Item) {
-                    CatFrameTags.add(namespace, path, (Item) element);
+                    TagManager.add(namespace, path, (Item) element);
                     count++;
                 } else if (element instanceof Block) {
-                    CatFrameTags.add(namespace, path, (Block) element);
+                    TagManager.add(namespace, path, (Block) element);
                     count++;
                 } else if (element instanceof ItemStack) {
                     // CatFrame tags live at registry-object level: merge ItemStacks
                     // by their Item; meta/NBT differences are dropped.
-                    CatFrameTags.add(namespace, path, ((ItemStack) element).getItem());
+                    TagManager.add(namespace, path, ((ItemStack) element).getItem());
                     count++;
                 }
                 // Non-registry elements (Class etc.) cannot map into CatFrame tags; skip them.
@@ -107,7 +107,7 @@ public class PineTags {
     public static boolean is(Item item, String tagName) {
         if (!CompactBase.isWolfTagInstalled() || item == null || tagName == null) return false;
         String[] location = splitTagName(tagName);
-        return CatFrameTags.is(item, location[0], location[1]);
+        return TagManager.is(item, location[0], location[1]);
     }
 
     /**
@@ -117,7 +117,7 @@ public class PineTags {
     public static boolean is(Block block, String tagName) {
         if (!CompactBase.isWolfTagInstalled() || block == null || tagName == null) return false;
         String[] location = splitTagName(tagName);
-        return CatFrameTags.is(block, location[0], location[1]);
+        return TagManager.is(block, location[0], location[1]);
     }
 
     /**
