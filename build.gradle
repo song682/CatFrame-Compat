@@ -103,6 +103,12 @@ dependencies {
     runtimeOnly "maven.modrinth:notenoughitems-unofficial:${project.nei_version}-GTNH"
     runtimeOnly "maven.modrinth:codechickencore-unofficial:${project.cc_version}"
     runtimeOnly "maven.modrinth:codechickenlib-unofficial:${project.cc_version}"
+    // NEI tooltip bridge (compact/nei): compile-time link to the NEI container-tooltip
+    // API and CodeChickenLib's line-handler protocol. Runtime presence is gated by
+    // CompactBase.isNEIInstalled(), so the bridge classes are only loaded when
+    // NotEnoughItems is actually installed.
+    compileOnly "maven.modrinth:notenoughitems-unofficial:${project.nei_version}-GTNH"
+    compileOnly "maven.modrinth:codechickenlib-unofficial:${project.cc_version}"
     compileOnly "curse.maven:ItemPhysicUnofficial-1113039:7512510"
     implementation "com.github.song682:CatFrame:${project.catframe_ver}"
     compileOnly "maven.modrinth:pineappletags:1.5.2"

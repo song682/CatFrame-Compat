@@ -88,4 +88,9 @@ public class CompactBase {
     public static boolean isChromaticTooltipsInstalled() {
         return Loader.isModLoaded("chromatictooltips");
     }
+
+    // Container tooltip support
+    public static boolean isNEIInstalled() {
+        return Loader.isModLoaded("NotEnoughItems");
+    }
 }

@@ -21,6 +21,10 @@ public class CompatConfig {
     public static boolean blockStateRotationFreely;
     /** Chromatic Tooltips rendering for CatFrame-based UIs / CatFrame UI 的 Chromatic Tooltips 渲染支持 */
     public static boolean chromaticTooltipsCompat;
+    /** Show item tags in item tooltips / 在物品提示框中显示物品标签 */
+    public static boolean tagTooltips;
+    /** NEI container-tooltip coexistence / 与 NEI 容器 tooltip 共存 */
+    public static boolean neiTooltipsCompat;
 
     public CompatConfig(File file) {
         config = new Configuration(file);
@@ -38,6 +42,8 @@ public class CompatConfig {
         activeTheme = config.getString("activeTheme", Configuration.CATEGORY_GENERAL, "catframe:vanilla", "Active UI theme id. Themes are loaded from assets/<namespace>/themes/<id>.json. Set to a registered theme id to change the look of CatFrame-based UIs.");
         blockStateRotationFreely = config.getBoolean("blockStateRotationFreely", Configuration.CATEGORY_GENERAL, false, "Active this to let BlockState rotating freely");
         chromaticTooltipsCompat = config.getBoolean("enableChromaticTooltipsCompat", Configuration.CATEGORY_GENERAL, true, "Route tooltips of CatFrame-based UIs (widget tooltips and hovered-slot item tooltips) through the Chromatic Tooltips renderer when it is installed, replacing CatFrame's built-in tooltip background/text rendering with its themed multi-section rendering. Requires the Chromatic Tooltips mod. Set to false to keep CatFrame's own tooltip rendering.");
+        tagTooltips = config.getBoolean("enableTagTooltips", Configuration.CATEGORY_GENERAL, true, "Append a 'Tag(s):' section listing the item's tags (#namespace:path) to its tooltip. Requires the pineapple_tag mod. Set to false to hide tags in tooltips.");
+        neiTooltipsCompat = config.getBoolean("enableNeiTooltipsCompat", Configuration.CATEGORY_GENERAL, true, "Coexist with NotEnoughItems' container tooltip renderer: CatFrame stops drawing its own hovered-slot item tooltip and hands its structured tooltip components (the bundle grid, for example) to NEI as CodeChickenLib line handlers, so NEI's frame keeps its paging, count details and other mods' handlers while CatFrame's image components stay visible - in every GUI container, not only CatFrame screens. When Chromatic Tooltips is installed it takes precedence and NEI's own item tooltip is suppressed on CatFrame screens instead. Requires NotEnoughItems. Set to false to keep CatFrame's own tooltip rendering (which leaves NEI running a second frame).");
     }
 
     public void save() {

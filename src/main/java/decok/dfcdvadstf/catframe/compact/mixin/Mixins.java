@@ -33,6 +33,15 @@ public enum Mixins implements IMixins {
             )
             .setApplyIf(() -> CompatConfig.chromaticTooltipsCompat && CompactBase.isChromaticTooltipsInstalled())
             .setPhase(Phase.LATE)
+    ),
+
+    NEI_TOOLTIPS_COMPAT(
+        new MixinBuilder("NEI tooltip coexistence")
+            .addClientMixins(
+                "MixinAbstractContainerScreenNei"
+            )
+            .setApplyIf(() -> CompatConfig.neiTooltipsCompat && CompactBase.isNEIInstalled())
+            .setPhase(Phase.LATE)
     );
 
     private final MixinBuilder builder;

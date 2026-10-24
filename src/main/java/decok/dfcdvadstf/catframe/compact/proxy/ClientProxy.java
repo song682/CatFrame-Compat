@@ -1,12 +1,15 @@
 package decok.dfcdvadstf.catframe.compact.proxy;
 
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.compact.CompactBase;
+import decok.dfcdvadstf.catframe.features.TagTooltips;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.RPCTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.NaturalExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.RPNaturalExtension;
+import decok.dfcdvadstf.catframe.compact.nei.NeiTooltipBridge;
 import decok.dfcdvadstf.catframe.compact.offhand.BackhandDisplayExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
@@ -18,6 +21,7 @@ import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeKeyHandler;
 import decok.dfcdvadstf.catframe.ui.extended.theme.ThemeManager;
 import io.qzz.dfdvdsf.jarfile.ModVersions;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.common.MinecraftForge;
 
 import static decok.dfcdvadstf.catframe.CatFrameCompat.logger;
 
@@ -113,6 +117,36 @@ public class ClientProxy extends CommonProxy {
         // The CatFrame core ClientOverlayHandler already drives OverlayManager tick/render
         // via Forge events; we only need to register our notification overlay.
         NotificationOverlay.INSTANCE.register();
+
+        // ── Item tag tooltips: append the item's PineappleTags to its tooltip ──
+        // ItemTooltipEvent is client-only; the handler checks config and mod presence itself.
+        MinecraftForge.EVENT_BUS.register(new TagTooltips());
+    }
+
+    /**
+     * Late wiring for handlers that must run after every mod finished its own
+     * initialization.
+     * <p>
+     * The NEI bridge is registered here rather than in {@link #preInit} because
+     * {@code GuiContainerManager} adds its own default handlers in its static
+     * initializer: touching it earlier would freeze NEI's setup mid-boot, and being
+     * registered last is also what puts CatFrame's component row below the item name.
+     * The reference sits behind the detection gate so the NEI-linked class is never
+     * loaded when NotEnoughItems is absent.
+     * </p>
+     */
+    @Override
+    public void postInit(FMLPostInitializationEvent event) {
+        super.postInit(event);
+
+        // ── NEI container-tooltip coexistence ──
+        // NEI replaces the renderToolTip call site, so CatFrame's deferred tooltip
+        // would otherwise be painted as a second frame. The bridge hands CatFrame's
+        // structured components to NEI as line handlers and flags the frame as
+        // NEI-owned for this mod's late mixin.
+        if (CompactBase.isNEIInstalled() && CompatConfig.neiTooltipsCompat) {
+            NeiTooltipBridge.register();
+        }
     }
 
 }
