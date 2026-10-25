@@ -27,6 +27,10 @@ jar {
         attributes (
                 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
                 'MixinConfigs': "mixins.${modId}.json",
+                // Early mixin channel (vanilla targets such as GuiScreen): FML has to
+                // instantiate the loader before any game class is loaded so GTNHMixins
+                // can queue mixins.catframe_compact.early.json in time.
+                'FMLCorePlugin': 'decok.dfcdvadstf.catframe.compact.mixin.CatFrameCompactEarlyMixins',
                 'ForceLoadAsMod': 'true',
                 'FMLCorePluginContainsFMLMod': 'true',
         )

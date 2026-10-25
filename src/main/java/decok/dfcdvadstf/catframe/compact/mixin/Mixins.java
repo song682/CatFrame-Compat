@@ -42,6 +42,18 @@ public enum Mixins implements IMixins {
             )
             .setApplyIf(() -> CompatConfig.neiTooltipsCompat && CompactBase.isNEIInstalled())
             .setPhase(Phase.LATE)
+    ),
+
+    // Early phase: the target is vanilla GuiScreen, loaded long before late mixins
+    // are queued. No mod/config gating is possible here (neither the mod list nor
+    // the config exists yet), so the mixin always applies and checks the switch and
+    // the NEI / Chromatic Tooltips precedence itself, per tooltip call.
+    VANILLA_TOOLTIPS_COMPAT(
+        new MixinBuilder("CatFrame tooltip rendering on vanilla-style screens")
+            .addClientMixins(
+                "MixinGuiScreenTooltip"
+            )
+            .setPhase(Phase.EARLY)
     );
 
     private final MixinBuilder builder;

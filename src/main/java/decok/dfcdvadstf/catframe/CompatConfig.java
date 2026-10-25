@@ -25,6 +25,8 @@ public class CompatConfig {
     public static boolean tagTooltips;
     /** NEI container-tooltip coexistence / 与 NEI 容器 tooltip 共存 */
     public static boolean neiTooltipsCompat;
+    /** CatFrame tooltip rendering on vanilla-style screens / 原版式界面的 CatFrame tooltip 渲染 */
+    public static boolean vanillaTooltipsCompat;
 
     public CompatConfig(File file) {
         config = new Configuration(file);
@@ -44,6 +46,7 @@ public class CompatConfig {
         chromaticTooltipsCompat = config.getBoolean("enableChromaticTooltipsCompat", Configuration.CATEGORY_GENERAL, true, "Route tooltips of CatFrame-based UIs (widget tooltips and hovered-slot item tooltips) through the Chromatic Tooltips renderer when it is installed, replacing CatFrame's built-in tooltip background/text rendering with its themed multi-section rendering. Requires the Chromatic Tooltips mod. Set to false to keep CatFrame's own tooltip rendering.");
         tagTooltips = config.getBoolean("enableTagTooltips", Configuration.CATEGORY_GENERAL, true, "Append a 'Tag(s):' section listing the item's tags (#namespace:path) to its tooltip. Requires the pineapple_tag mod. Set to false to hide tags in tooltips.");
         neiTooltipsCompat = config.getBoolean("enableNeiTooltipsCompat", Configuration.CATEGORY_GENERAL, true, "Coexist with NotEnoughItems' container tooltip renderer: CatFrame stops drawing its own hovered-slot item tooltip and hands its structured tooltip components (the bundle grid, for example) to NEI as CodeChickenLib line handlers, so NEI's frame keeps its paging, count details and other mods' handlers while CatFrame's image components stay visible - in every GUI container, not only CatFrame screens. When Chromatic Tooltips is installed it takes precedence and NEI's own item tooltip is suppressed on CatFrame screens instead. Requires NotEnoughItems. Set to false to keep CatFrame's own tooltip rendering (which leaves NEI running a second frame).");
+        vanillaTooltipsCompat = config.getBoolean("enableVanillaTooltipsCompat", Configuration.CATEGORY_GENERAL, false, "Render tooltips of vanilla-style screens - any screen that keeps the vanilla renderToolTip/drawHoveringText path, e.g. other mods' container GUIs, chat hover text, creative tab names - with CatFrame's themed tooltip, including structured components and TOOLTIP_STYLE. Only takes effect when neither NotEnoughItems nor Chromatic Tooltips is installed: both take the vanilla tooltip path over wholesale, and this layer steps aside then. Set to false to keep the vanilla tooltip.");
     }
 
     public void save() {
