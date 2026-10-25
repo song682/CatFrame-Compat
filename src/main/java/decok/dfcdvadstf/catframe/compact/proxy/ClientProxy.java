@@ -9,7 +9,7 @@ import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.CTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.ctm.RPCTMRenderExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.NaturalExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.RPNaturalExtension;
-import decok.dfcdvadstf.catframe.compact.nei.NeiTooltipBridge;
+import decok.dfcdvadstf.catframe.compact.tooltips.nei.NeiTooltipBridge;
 import decok.dfcdvadstf.catframe.compact.offhand.BackhandDisplayExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
@@ -118,8 +118,8 @@ public class ClientProxy extends CommonProxy {
         // via Forge events; we only need to register our notification overlay.
         NotificationOverlay.INSTANCE.register();
 
-        // ── Item tag tooltips: append the item's PineappleTags to its tooltip ──
-        // ItemTooltipEvent is client-only; the handler checks config and mod presence itself.
+        // ── Item tag tooltips: append the item's CatFrame item tags to its tooltip ──
+        // ItemTooltipEvent is client-only; the handler checks the config itself.
         MinecraftForge.EVENT_BUS.register(new TagTooltips());
     }
 

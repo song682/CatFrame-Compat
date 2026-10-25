@@ -25,7 +25,7 @@ public class CatFrameCompactLateMixins implements ILateMixinLoader {
 
     @Override
     public String getMixinConfig() {
-        return "mixins.catframe_compact.late.json";
+        return "mixins.catframe_compat.late.json";
     }
 
     @Override

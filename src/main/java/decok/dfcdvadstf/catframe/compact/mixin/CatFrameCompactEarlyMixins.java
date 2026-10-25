@@ -43,7 +43,7 @@ import java.util.Set;
 public class CatFrameCompactEarlyMixins implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     /** Mixin config queued for the early phase; its package holds {@code mixin/early}. */
-    private static final String MIXIN_CONFIG = "mixins.catframe_compact.early.json";
+    private static final String MIXIN_CONFIG = "mixins.catframe_compat.early.json";
 
     @Override
     public String[] getASMTransformerClass() {

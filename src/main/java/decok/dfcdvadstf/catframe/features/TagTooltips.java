@@ -2,65 +2,88 @@ package decok.dfcdvadstf.catframe.features;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import decok.dfcdvadstf.catframe.CompatConfig;
-import decok.dfcdvadstf.catframe.compact.CompactBase;
-import decok.dfcdvadstf.catframe.compact.tags.PineTags;
+import decok.dfcdvadstf.catframe.tags.TagLoader;
+import decok.dfcdvadstf.catframe.tags.TagManager;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Appends the tags of the hovered item to its tooltip:
+ * Appends the CatFrame item tags of the hovered item to its tooltip:
  * <pre>
  * Tag(s):
- * #modid:tags
- * #modid2:tags3
+ * #forge:planks
+ * #minecraft:planks
  * </pre>
- * Tag names come from PineappleTags via {@link PineTags}. Names without a namespace
- * fall under {@link PineTags#DEFAULT_NAMESPACE}, matching the CatFrame tag mapping.
+ * <p>
+ * The names are read straight from CatFrame's own tag system
+ * ({@link TagManager#itemLoader()}), so every item tag the game knows about is
+ * covered: built-in data pack tags, tags contributed by other packs and tags
+ * registered in code. PineappleTags needs no special handling here - a
+ * PineappleTags tag only shows up once that tag exists as a CatFrame tag.
+ * </p>
+ * <p>
+ * 1.7.10 tags live at registry-object level (no meta/NBT), so a stack always
+ * resolves to its {@link Item}. The tag set is queried on every tooltip instead
+ * of being cached, which keeps the display correct across
+ * {@code /datapack reload}; the scan is bounded by the number of registered
+ * item tags and every lookup is an identity comparison against a tag's
+ * contents.
+ * </p>
  */
 public class TagTooltips {
 
     private static final String HEADER = "Tag(s):";
 
+    private static final String TAG_PREFIX = "#";
+
     @SubscribeEvent
     public void onTooltip(ItemTooltipEvent event) {
-        if (!CompatConfig.tagTooltips || !CompactBase.isWolfTagInstalled()) return;
+        if (!CompatConfig.tagTooltips) return;
 
         ItemStack stack = event.itemStack;
-        if (stack == null || stack.getItem() == null) return;
+        if (stack == null) return;
 
-        Set<String> names = collectTags(stack);
-        if (names.isEmpty()) return;
+        Item item = stack.getItem();
+        if (item == null) return;
+
+        List<String> tags = collectItemTags(item);
+        if (tags.isEmpty()) return;
 
         List<String> lines = event.toolTip;
         lines.add(HEADER);
-        for (String name : names) {
-            lines.add("#" + name);
+        for (String tag : tags) {
+            lines.add(TAG_PREFIX + tag);
         }
     }
 
     /**
-     * Collects tag names for the stack, querying with the ItemStack first (meta/NBT-specific tags)
-     * and then with the bare Item, merging results while keeping order and removing duplicates.
+     * Collects the ids ({@code namespace:path}) of every item tag containing the
+     * given item, sorted alphabetically for a stable tooltip order.
+     *
+     * @param item the item to look up
+     * @return the matching tag ids, or an empty list when the item belongs to none
      */
-    private static Set<String> collectTags(ItemStack stack) {
-        Set<String> result = new LinkedHashSet<String>();
-        for (String raw : PineTags.getPineappleTagNames(stack)) {
-            addName(result, raw);
-        }
-        Item item = stack.getItem();
-        for (String raw : PineTags.getPineappleTagNames(item)) {
-            addName(result, raw);
-        }
-        return result;
-    }
+    private static List<String> collectItemTags(Item item) {
+        TagLoader<Item> loader = TagManager.itemLoader();
+        Set<ResourceLocation> knownTags = loader.getAllTagNames();
+        if (knownTags.isEmpty()) return Collections.emptyList();
 
-    private static void addName(Set<String> out, String raw) {
-        if (raw == null || raw.isEmpty()) return;
-        out.add(raw.indexOf(':') > 0 ? raw : PineTags.DEFAULT_NAMESPACE + ":" + raw);
+        List<String> names = new ArrayList<String>();
+        for (ResourceLocation tag : knownTags) {
+            if (loader.is(item, tag)) {
+                names.add(tag.toString());
+            }
+        }
+        if (names.size() > 1) {
+            Collections.sort(names);
+        }
+        return names;
     }
 }

@@ -1,6 +1,6 @@
 package decok.dfcdvadstf.catframe.compact.mixin.late;
 
-import decok.dfcdvadstf.catframe.compact.nei.NeiTooltipBridge;
+import decok.dfcdvadstf.catframe.compact.tooltips.nei.NeiTooltipBridge;
 import decok.dfcdvadstf.catframe.ui.GuiGraphicsExtractor;
 import decok.dfcdvadstf.catframe.ui.screens.container.AbstractContainerScreen;
 import org.spongepowered.asm.mixin.Mixin;

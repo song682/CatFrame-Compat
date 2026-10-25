@@ -1,4 +1,4 @@
-package decok.dfcdvadstf.catframe.compact.nei;
+package decok.dfcdvadstf.catframe.compact.tooltips.nei;
 
 import codechicken.nei.guihook.IContainerObjectHandler;
 import decok.dfcdvadstf.catframe.ui.screens.container.AbstractContainerScreen;
