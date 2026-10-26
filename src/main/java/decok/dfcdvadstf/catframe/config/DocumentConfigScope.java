@@ -26,18 +26,8 @@ public final class DocumentConfigScope implements IConfigScope {
     }
 
     @Override
-    public boolean getBoolean(String key, boolean defaultValue, String comment) {
-        return getBoolean(GENERAL, key, defaultValue, comment);
-    }
-
-    @Override
     public boolean getBoolean(String category, String key, boolean defaultValue, String comment) {
         return (Boolean) declare(category, key, defaultValue, comment).getValue();
-    }
-
-    @Override
-    public int getInt(String key, int defaultValue, String comment) {
-        return getInt(GENERAL, key, defaultValue, comment);
     }
 
     @Override
@@ -46,18 +36,8 @@ public final class DocumentConfigScope implements IConfigScope {
     }
 
     @Override
-    public long getLong(String key, long defaultValue, String comment) {
-        return getLong(GENERAL, key, defaultValue, comment);
-    }
-
-    @Override
     public long getLong(String category, String key, long defaultValue, String comment) {
         return (Long) declare(category, key, defaultValue, comment).getValue();
-    }
-
-    @Override
-    public double getDouble(String key, double defaultValue, String comment) {
-        return getDouble(GENERAL, key, defaultValue, comment);
     }
 
     @Override
@@ -66,28 +46,13 @@ public final class DocumentConfigScope implements IConfigScope {
     }
 
     @Override
-    public String getString(String key, String defaultValue, String comment) {
-        return getString(GENERAL, key, defaultValue, comment);
-    }
-
-    @Override
     public String getString(String category, String key, String defaultValue, String comment) {
         return (String) declare(category, key, defaultValue, comment).getValue();
     }
 
     @Override
-    public String[] getStringList(String key, String[] defaultValue, String comment) {
-        return getStringList(GENERAL, key, defaultValue, comment);
-    }
-
-    @Override
     public String[] getStringList(String category, String key, String[] defaultValue, String comment) {
         return (String[]) declare(category, key, defaultValue, comment).getValue();
-    }
-
-    @Override
-    public void set(String key, Object value) {
-        set(GENERAL, key, value);
     }
 
     @Override

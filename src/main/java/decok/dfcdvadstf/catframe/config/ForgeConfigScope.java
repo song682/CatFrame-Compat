@@ -24,30 +24,15 @@ public final class ForgeConfigScope implements IConfigScope {
     }
 
     @Override
-    public boolean getBoolean(String key, boolean defaultValue, String comment) {
-        return getBoolean(GENERAL, key, defaultValue, comment);
-    }
-
-    @Override
     public boolean getBoolean(String category, String key, boolean defaultValue, String comment) {
         Property property = property(category, key, Boolean.toString(defaultValue), comment, Property.Type.BOOLEAN);
         return property.getBoolean(defaultValue);
     }
 
     @Override
-    public int getInt(String key, int defaultValue, String comment) {
-        return getInt(GENERAL, key, defaultValue, comment);
-    }
-
-    @Override
     public int getInt(String category, String key, int defaultValue, String comment) {
         Property property = property(category, key, Integer.toString(defaultValue), comment, Property.Type.INTEGER);
         return property.getInt(defaultValue);
-    }
-
-    @Override
-    public long getLong(String key, long defaultValue, String comment) {
-        return getLong(GENERAL, key, defaultValue, comment);
     }
 
     @Override
@@ -62,19 +47,9 @@ public final class ForgeConfigScope implements IConfigScope {
     }
 
     @Override
-    public double getDouble(String key, double defaultValue, String comment) {
-        return getDouble(GENERAL, key, defaultValue, comment);
-    }
-
-    @Override
     public double getDouble(String category, String key, double defaultValue, String comment) {
         Property property = property(category, key, Double.toString(defaultValue), comment, Property.Type.DOUBLE);
         return property.getDouble(defaultValue);
-    }
-
-    @Override
-    public String getString(String key, String defaultValue, String comment) {
-        return getString(GENERAL, key, defaultValue, comment);
     }
 
     @Override
@@ -84,19 +59,9 @@ public final class ForgeConfigScope implements IConfigScope {
     }
 
     @Override
-    public String[] getStringList(String key, String[] defaultValue, String comment) {
-        return getStringList(GENERAL, key, defaultValue, comment);
-    }
-
-    @Override
     public String[] getStringList(String category, String key, String[] defaultValue, String comment) {
         Property property = listProperty(category, key, defaultValue, comment);
         return property.getStringList();
-    }
-
-    @Override
-    public void set(String key, Object value) {
-        set(GENERAL, key, value);
     }
 
     @Override

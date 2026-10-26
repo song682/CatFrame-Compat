@@ -2,8 +2,11 @@ package decok.dfcdvadstf.catframe.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,15 +21,17 @@ import net.minecraftforge.common.config.Configuration;
 /**
  * Entry point of the config system.
  * <p>
- * A config class carries {@link Configure} and implements {@link IConfig}. Both
- * are mandatory: registering a class that satisfies only one of them fails, which
- * keeps the annotation and the behaviour from drifting apart.
+ * A config class is a class carrying {@link Configure}; every config entry is a
+ * {@code static}, non-{@code final} field of that class, annotated with one of the
+ * {@code Default*} annotations plus, optionally, {@link Configure.Comment},
+ * {@link Configure.Name} or {@link Configure.Ignore}. Registration reflects over
+ * those fields, resolves each value from the backing file and assigns it back.
  * <p>
  * Typical usage, from {@code FMLPreInitializationEvent}:
  *
  * <pre>
  * ConfigManager.init(event.getModConfigurationDirectory());
- * ConfigManager.register(CatFrameConfig.class);
+ * ConfigManager.register(CompatConfig.class);
  * </pre>
  *
  * Registration loads the file immediately, applies the values and writes the file
@@ -64,7 +69,7 @@ public final class ConfigManager {
     /**
      * Loads a config class and binds it to its file.
      *
-     * @param configClass class carrying {@link Configure} and implementing {@link IConfig}
+     * @param configClass class carrying {@link Configure}
      * @throws ConfigException when the class is declared incorrectly or its file cannot be handled
      */
     public static void register(Class<?> configClass) {
@@ -72,19 +77,8 @@ public final class ConfigManager {
             throw new ConfigException("Config class must not be null");
         }
         Configure annotation = configClass.getAnnotation(Configure.class);
-        boolean implementsConfig = IConfig.class.isAssignableFrom(configClass);
-
-        if (annotation == null && !implementsConfig) {
-            throw new ConfigException(configClass.getName()
-                    + " is neither annotated with @Configure nor implements IConfig");
-        }
         if (annotation == null) {
-            throw new ConfigException(configClass.getName()
-                    + " implements IConfig but is missing the @Configure annotation");
-        }
-        if (!implementsConfig) {
-            throw new ConfigException(configClass.getName()
-                    + " is annotated with @Configure but does not implement IConfig");
+            throw new ConfigException(configClass.getName() + " is missing the @Configure annotation");
         }
         if (configDirectory == null) {
             throw new ConfigException("ConfigManager.init(...) must be called before registering " + configClass.getName());
@@ -103,10 +97,19 @@ public final class ConfigManager {
         }
 
         File file = new File(configDirectory, name + "." + annotation.type().getExtension());
-        IConfig instance = instantiate(configClass);
+        List<Field> fields = configFields(configClass);
 
-        IConfigScope scope = annotation.type() == ConfigType.FORGE_CFG ? loadForge(configClass, instance, file)
-                : loadDocument(configClass, instance, file, annotation.type());
+        IConfigScope scope;
+        if (annotation.type() == ConfigType.FORGE_CFG) {
+            scope = new ForgeConfigScope(new Configuration(file));
+            applyDeclarations(scope, annotation, fields);
+        } else {
+            DocumentConfigScope documentScope = documentScope(file, annotation.type());
+            applyDeclarations(documentScope, annotation, fields);
+            logUndeclared(documentScope.getDocument(), configClass);
+            scope = documentScope;
+        }
+        scope.save();
 
         SCOPES.put(key, scope);
         KEYS.put(configClass, key);
@@ -133,10 +136,11 @@ public final class ConfigManager {
      * @throws ConfigException when the class was never registered
      */
     public static File getFile(Class<?> configClass) {
-        Configure annotation = configClass.getAnnotation(Configure.class);
-        if (annotation == null) {
-            throw new ConfigException("Config class " + configClass.getName() + " is missing @Configure");
+        String key = KEYS.get(configClass);
+        if (key == null) {
+            throw new ConfigException("Config class " + configClass.getName() + " was never registered");
         }
+        Configure annotation = configClass.getAnnotation(Configure.class);
         String name = annotation.name().trim().isEmpty() ? annotation.modid().trim() : annotation.name().trim();
         return new File(configDirectory, name + "." + annotation.type().getExtension());
     }
@@ -150,53 +154,134 @@ public final class ConfigManager {
         }
     }
 
-    private static IConfigScope loadForge(Class<?> configClass, IConfig instance, File file) {
-        Configuration configuration = new Configuration(file);
-        ForgeConfigScope scope = new ForgeConfigScope(configuration);
-        invokeLoad(configClass, instance, scope);
-        scope.save();
-        return scope;
+    /**
+     * Collects the config entries of a class.
+     *
+     * @param configClass class carrying {@link Configure}
+     * @return fields in declaration order, excluding the ones marked {@link Configure.Ignore}
+     */
+    private static List<Field> configFields(Class<?> configClass) {
+        List<Field> fields = new ArrayList<Field>();
+        for (Field field : configClass.getDeclaredFields()) {
+            if (field.isSynthetic()) {
+                continue;
+            }
+            boolean ignored = field.isAnnotationPresent(Configure.Ignore.class);
+            if (!Modifier.isStatic(field.getModifiers())) {
+                if (ignored) {
+                    continue;
+                }
+                throw new ConfigException("Config field " + describe(field)
+                        + " is not static. Config entries must be static fields");
+            }
+            if (Modifier.isFinal(field.getModifiers())) {
+                if (ignored) {
+                    continue;
+                }
+                throw new ConfigException("Config field " + describe(field)
+                        + " is final and cannot be assigned. Add @Configure.Ignore to exclude it");
+            }
+            if (ignored) {
+                continue;
+            }
+            fields.add(field);
+        }
+        return fields;
     }
 
-    private static IConfigScope loadDocument(Class<?> configClass, IConfig instance, File file, ConfigType type) {
+    private static void applyDeclarations(IConfigScope scope, Configure annotation, List<Field> fields) {
+        String category = annotation.category();
+        for (Field field : fields) {
+            String key = entryName(field);
+            String comment = commentOf(field);
+            field.setAccessible(true);
+            try {
+                field.set(null, resolve(scope, category, key, comment, field));
+            } catch (IllegalAccessException e) {
+                throw new ConfigException("Could not assign config field " + describe(field), e);
+            }
+        }
+    }
+
+    private static Object resolve(IConfigScope scope, String category, String key, String comment, Field field) {
+        Class<?> type = field.getType();
+        if (type == boolean.class) {
+            return scope.getBoolean(category, key, defaultOf(field, Configure.DefaultBoolean.class).value(), comment);
+        }
+        if (type == int.class) {
+            return scope.getInt(category, key, defaultOf(field, Configure.DefaultInt.class).value(), comment);
+        }
+        if (type == long.class) {
+            return scope.getLong(category, key, defaultOf(field, Configure.DefaultLong.class).value(), comment);
+        }
+        if (type == double.class) {
+            return scope.getDouble(category, key, defaultOf(field, Configure.DefaultDouble.class).value(), comment);
+        }
+        if (type == String.class) {
+            return scope.getString(category, key, defaultOf(field, Configure.DefaultString.class).value(), comment);
+        }
+        if (type == String[].class) {
+            return scope.getStringList(category, key, defaultOf(field, Configure.DefaultStringList.class).value(),
+                    comment);
+        }
+        throw new ConfigException("Config field " + describe(field) + " has unsupported type " + type.getName()
+                + ". Supported types are boolean, int, long, double, String and String[]");
+    }
+
+    private static <A extends java.lang.annotation.Annotation> A defaultOf(Field field, Class<A> annotation) {
+        A value = field.getAnnotation(annotation);
+        if (value == null) {
+            throw new ConfigException("Config field " + describe(field) + " is missing @" + annotation.getSimpleName());
+        }
+        return value;
+    }
+
+    private static String entryName(Field field) {
+        Configure.Name name = field.getAnnotation(Configure.Name.class);
+        if (name == null) {
+            return field.getName();
+        }
+        String value = name.value().trim();
+        if (value.isEmpty()) {
+            throw new ConfigException("Config field " + describe(field) + " has an empty @Configure.Name");
+        }
+        return value;
+    }
+
+    private static String commentOf(Field field) {
+        Configure.Comment comment = field.getAnnotation(Configure.Comment.class);
+        if (comment == null) {
+            return "";
+        }
+        StringBuilder out = new StringBuilder();
+        for (String line : comment.value()) {
+            if (out.length() > 0) {
+                out.append('\n');
+            }
+            out.append(line);
+        }
+        return out.toString();
+    }
+
+    private static String describe(Field field) {
+        return field.getDeclaringClass().getName() + '.' + field.getName();
+    }
+
+    private static DocumentConfigScope documentScope(File file, ConfigType type) {
         ConfigFormat format = createFormat(type);
         ConfigDocument document = new ConfigDocument();
-
         try {
             format.read(file, document);
         } catch (IOException e) {
             throw new ConfigException("Failed to read config file " + file.getAbsolutePath(), e);
         }
+        return new DocumentConfigScope(document, format, file);
+    }
 
-        DocumentConfigScope scope = new DocumentConfigScope(document, format, file);
-        invokeLoad(configClass, instance, scope);
-
+    private static void logUndeclared(ConfigDocument document, Class<?> configClass) {
         for (String raw : document.getUndeclaredKeys()) {
             LOGGER.debug("Dropping config entry '{}' in category '{}' that {} no longer declares",
-                    ConfigDocument.rawEntryOf(raw), ConfigDocument.rawCategoryOf(raw),
-                    configClass.getSimpleName());
-        }
-
-        scope.save();
-        return scope;
-    }
-
-    private static void invokeLoad(Class<?> configClass, IConfig instance, IConfigScope scope) {
-        try {
-            instance.load(scope);
-        } catch (RuntimeException e) {
-            throw new ConfigException("Config class " + configClass.getName() + " failed to load", e);
-        }
-    }
-
-    private static IConfig instantiate(Class<?> configClass) {
-        try {
-            return (IConfig) configClass.getDeclaredConstructor().newInstance();
-        } catch (NoSuchMethodException e) {
-            throw new ConfigException(
-                    "Config class " + configClass.getName() + " needs a public no-argument constructor", e);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new ConfigException("Could not instantiate config class " + configClass.getName(), e);
+                    ConfigDocument.rawEntryOf(raw), ConfigDocument.rawCategoryOf(raw), configClass.getSimpleName());
         }
     }
 
