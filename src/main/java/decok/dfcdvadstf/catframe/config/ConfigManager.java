@@ -13,10 +13,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import decok.dfcdvadstf.catframe.config.format.ConfigFormat;
+import decok.dfcdvadstf.catframe.config.format.ForgeCfgFormat;
 import decok.dfcdvadstf.catframe.config.format.JsonConfigFormat;
 import decok.dfcdvadstf.catframe.config.format.PropertiesConfigFormat;
 import decok.dfcdvadstf.catframe.config.format.TomlConfigFormat;
-import net.minecraftforge.common.config.Configuration;
 
 /**
  * Entry point of the config system.
@@ -102,16 +102,9 @@ public final class ConfigManager {
         File file = new File(configDirectory, name + "." + annotation.type().getExtension());
         List<Field> fields = configFields(configClass);
 
-        IConfigScope scope;
-        if (annotation.type() == ConfigType.FORGE_CFG) {
-            scope = new ForgeConfigScope(new Configuration(file));
-            applyDeclarations(scope, fields);
-        } else {
-            DocumentConfigScope documentScope = documentScope(file, annotation.type());
-            applyDeclarations(documentScope, fields);
-            logUndeclared(documentScope.getDocument(), configClass);
-            scope = documentScope;
-        }
+        DocumentConfigScope scope = documentScope(file, annotation.type());
+        applyDeclarations(scope, fields);
+        logUndeclared(scope.getDocument(), configClass);
         scope.save();
 
         SCOPES.put(key, scope);
@@ -419,15 +412,25 @@ public final class ConfigManager {
         return new DocumentConfigScope(document, format, file);
     }
 
+    /**
+     * Reports entries that are in the file but no longer declared by the class. They
+     * are removed on the next write, which is what keeps a renamed
+     * {@link ConfigEntry.Name} or a deleted field from leaving a permanent orphan
+     * behind. The message is a warning rather than debug output because a hand
+     * written entry is lost silently otherwise.
+     */
     private static void logUndeclared(ConfigDocument document, Class<?> configClass) {
         for (String raw : document.getUndeclaredKeys()) {
-            LOGGER.debug("Dropping config entry '{}' in category '{}' that {} no longer declares",
+            LOGGER.warn("Removing config entry '{}' in category '{}' from the file: {} does not declare it. "
+                            + "Keep it by declaring a field for it, or copy the entry out beforehand",
                     ConfigDocument.rawEntryOf(raw), ConfigDocument.rawCategoryOf(raw), configClass.getSimpleName());
         }
     }
 
     private static ConfigFormat createFormat(ConfigType type) {
         switch (type) {
+            case FORGE_CFG:
+                return new ForgeCfgFormat();
             case JSON:
                 return new JsonConfigFormat();
             case PROPERTIES:
@@ -435,7 +438,7 @@ public final class ConfigManager {
             case TOML:
                 return new TomlConfigFormat();
             default:
-                throw new ConfigException("No plain text parser for config type " + type);
+                throw new ConfigException("No parser for config type " + type);
         }
     }
 }

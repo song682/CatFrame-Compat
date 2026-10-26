@@ -3,18 +3,18 @@ package decok.dfcdvadstf.catframe.config;
 /**
  * Backend accessor used by {@link ConfigManager} to reach one backing file.
  * <p>
- * One implementation per storage model: {@link ForgeConfigScope} for
- * {@link ConfigType#FORGE_CFG}, {@link DocumentConfigScope} for the plain text
- * formats. Every getter takes its category explicitly, because the category is
- * declared once on {@link Configure#category()} and shared by all fields of that
- * class; the {@code general} level is omitted by the plain text formats when it is
- * the only one in use.
+ * The single implementation is {@link DocumentConfigScope}, which works on
+ * {@link ConfigDocument} and delegates parsing to the {@link ConfigType} format, so
+ * every format shares the same semantics. Every getter takes its category
+ * explicitly, because the category is declared once on {@link ConfigEntry.Category}
+ * and shared by all fields of that class; the {@code general} level is omitted by
+ * the formats when it is the only one in use.
  */
 public interface IConfigScope {
 
     /**
      * Category used when a config class does not override
-     * {@link Configure#category()}.
+     * {@link ConfigEntry.Category}.
      */
     String GENERAL = "general";
 
