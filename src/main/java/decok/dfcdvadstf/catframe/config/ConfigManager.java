@@ -222,6 +222,7 @@ public final class ConfigManager {
         if (type == int.class) {
             ConfigEntry.Int declared = require(field, ConfigEntry.Int.class);
             requireValidRange(field, declared.min(), declared.max());
+            requireDefaultInRange(field, declared.value(), declared.min(), declared.max());
             int value = scope.getInt(category, key, declared.value(),
                     withRange(comment, declared.min(), declared.max()));
             int clamped = Math.min(declared.max(), Math.max(declared.min(), value));
@@ -233,6 +234,7 @@ public final class ConfigManager {
         if (type == long.class) {
             ConfigEntry.Long declared = require(field, ConfigEntry.Long.class);
             requireValidRange(field, declared.min(), declared.max());
+            requireDefaultInRange(field, declared.value(), declared.min(), declared.max());
             long value = scope.getLong(category, key, declared.value(),
                     withRange(comment, declared.min(), declared.max()));
             long clamped = Math.min(declared.max(), Math.max(declared.min(), value));
@@ -244,6 +246,7 @@ public final class ConfigManager {
         if (type == double.class) {
             ConfigEntry.Double declared = require(field, ConfigEntry.Double.class);
             requireValidRange(field, declared.min(), declared.max());
+            requireDefaultInRange(field, declared.value(), declared.min(), declared.max());
             double value = scope.getDouble(category, key, declared.value(),
                     withRange(comment, declared.min(), declared.max()));
             double clamped = Double.isNaN(value) ? declared.value()
@@ -272,6 +275,26 @@ public final class ConfigManager {
     private static void requireValidRange(Field field, double min, double max) {
         if (min > max) {
             throw new ConfigException("Config field " + describe(field) + " declares min " + min + " above max " + max);
+        }
+    }
+
+    /**
+     * Rejects a default outside the declared range at registration time. Clamping
+     * here would hide the mistake: the value is authored by the mod, not by a user
+     * editing the file, so there is nothing to salvage.
+     */
+    private static void requireDefaultInRange(Field field, long value, long min, long max) {
+        if (value < min || value > max) {
+            throw new ConfigException("Config field " + describe(field) + " declares default " + value
+                    + " outside its range [" + min + ", " + max + "]");
+        }
+    }
+
+    private static void requireDefaultInRange(Field field, double value, double min, double max) {
+        // NaN compares false against every bound, so it has to be rejected separately.
+        if (Double.isNaN(value) || value < min || value > max) {
+            throw new ConfigException("Config field " + describe(field) + " declares default " + value
+                    + " outside its range [" + min + ", " + max + "]");
         }
     }
 
