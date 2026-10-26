@@ -36,6 +36,11 @@ import java.util.Set;
  * item tags and every lookup is an identity comparison against a tag's
  * contents.
  * </p>
+ * <p>
+ * The section is treated as advanced information: it only appears while the
+ * advanced tooltips switch is on (F3+H), which the event exposes as
+ * {@link ItemTooltipEvent#showAdvancedItemTooltips}.
+ * </p>
  */
 public class TagTooltips {
 
@@ -46,6 +51,8 @@ public class TagTooltips {
     @SubscribeEvent
     public void onTooltip(ItemTooltipEvent event) {
         if (!CompatConfig.tagTooltips) return;
+        // Tags are advanced information: only show them while F3+H is on.
+        if (!event.showAdvancedItemTooltips) return;
 
         ItemStack stack = event.itemStack;
         if (stack == null) return;
