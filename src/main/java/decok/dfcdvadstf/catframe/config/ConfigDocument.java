@@ -50,10 +50,10 @@ public final class ConfigDocument {
      * @param key entry name
      * @return entry node
      */
-    public ConfigEntry entry(String qualifiedName, String key) {
+    public ConfigValue entry(String qualifiedName, String key) {
         String name = normalize(qualifiedName);
         ConfigCategoryNode node = category(name);
-        ConfigEntry entry = node.find(key);
+        ConfigValue entry = node.find(key);
         if (entry == null) {
             entry = node.entry(key);
             entry.setRawValue(rawValues.remove(rawKey(name, key)));

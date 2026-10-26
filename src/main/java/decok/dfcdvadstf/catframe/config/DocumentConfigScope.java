@@ -57,7 +57,7 @@ public final class DocumentConfigScope implements IConfigScope {
 
     @Override
     public void set(String category, String key, Object value) {
-        ConfigEntry entry = document.find(category) == null ? null : document.find(category).find(key);
+        ConfigValue entry = document.find(category) == null ? null : document.find(category).find(key);
         if (entry == null || entry.getType() == null) {
             throw new ConfigException("Config entry '" + key + "' in category '" + category
                     + "' was never declared, cannot update it");
@@ -87,11 +87,11 @@ public final class DocumentConfigScope implements IConfigScope {
         return document;
     }
 
-    private ConfigEntry declare(String category, String key, Object defaultValue, String comment) {
+    private ConfigValue declare(String category, String key, Object defaultValue, String comment) {
         if (key == null || key.trim().isEmpty()) {
             throw new ConfigException("Config entry name must not be empty (category '" + category + "')");
         }
-        ConfigEntry entry = document.entry(category, key);
+        ConfigValue entry = document.entry(category, key);
         if (entry.define(ConfigEntryType.ofDefault(defaultValue), defaultValue, comment)) {
             document.markDirty();
         }

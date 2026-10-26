@@ -15,7 +15,7 @@ import java.util.Map;
 public final class ConfigCategoryNode {
 
     private final String qualifiedName;
-    private final Map<String, ConfigEntry> entries = new LinkedHashMap<String, ConfigEntry>();
+    private final Map<String, ConfigValue> entries = new LinkedHashMap<String, ConfigValue>();
 
     ConfigCategoryNode(String qualifiedName) {
         this.qualifiedName = qualifiedName;
@@ -39,10 +39,10 @@ public final class ConfigCategoryNode {
      * @param key entry name
      * @return entry bound to this category
      */
-    public ConfigEntry entry(String key) {
-        ConfigEntry entry = entries.get(key);
+    public ConfigValue entry(String key) {
+        ConfigValue entry = entries.get(key);
         if (entry == null) {
-            entry = new ConfigEntry(qualifiedName, key);
+            entry = new ConfigValue(qualifiedName, key);
             entries.put(key, entry);
         }
         return entry;
@@ -52,11 +52,11 @@ public final class ConfigCategoryNode {
      * @param key entry name
      * @return entry or {@code null} when the key was never declared
      */
-    public ConfigEntry find(String key) {
+    public ConfigValue find(String key) {
         return entries.get(key);
     }
 
-    public Collection<ConfigEntry> getEntries() {
+    public Collection<ConfigValue> getEntries() {
         return Collections.unmodifiableCollection(entries.values());
     }
 

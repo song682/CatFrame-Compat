@@ -22,10 +22,13 @@ import net.minecraftforge.common.config.Configuration;
  * Entry point of the config system.
  * <p>
  * A config class is a class carrying {@link Configure}; every config entry is a
- * {@code static}, non-{@code final} field of that class, annotated with one of the
- * {@code Default*} annotations plus, optionally, {@link Configure.Comment},
- * {@link Configure.Name} or {@link Configure.Ignore}. Registration reflects over
- * those fields, resolves each value from the backing file and assigns it back.
+ * {@code static}, non-{@code final} field carrying {@link ConfigEntry}, which picks
+ * the kind through exactly one of {@link ConfigEntry.Boolean},
+ * {@link ConfigEntry.Int}, {@link ConfigEntry.Long}, {@link ConfigEntry.Double},
+ * {@link ConfigEntry.Text} or {@link ConfigEntry.List} and optionally adds
+ * {@link ConfigEntry.Comment}, {@link ConfigEntry.Name},
+ * {@link ConfigEntry.Category} or {@link ConfigEntry.Ignore}. Registration reflects
+ * over those fields, resolves each value from the backing file and assigns it back.
  * <p>
  * Typical usage, from {@code FMLPreInitializationEvent}:
  *
@@ -102,10 +105,10 @@ public final class ConfigManager {
         IConfigScope scope;
         if (annotation.type() == ConfigType.FORGE_CFG) {
             scope = new ForgeConfigScope(new Configuration(file));
-            applyDeclarations(scope, annotation, fields);
+            applyDeclarations(scope, fields);
         } else {
             DocumentConfigScope documentScope = documentScope(file, annotation.type());
-            applyDeclarations(documentScope, annotation, fields);
+            applyDeclarations(documentScope, fields);
             logUndeclared(documentScope.getDocument(), configClass);
             scope = documentScope;
         }
@@ -158,7 +161,7 @@ public final class ConfigManager {
      * Collects the config entries of a class.
      *
      * @param configClass class carrying {@link Configure}
-     * @return fields in declaration order, excluding the ones marked {@link Configure.Ignore}
+     * @return fields in declaration order, excluding the ones marked {@link ConfigEntry.Ignore}
      */
     private static List<Field> configFields(Class<?> configClass) {
         List<Field> fields = new ArrayList<Field>();
@@ -166,7 +169,7 @@ public final class ConfigManager {
             if (field.isSynthetic()) {
                 continue;
             }
-            boolean ignored = field.isAnnotationPresent(Configure.Ignore.class);
+            boolean ignored = field.isAnnotationPresent(ConfigEntry.Ignore.class);
             if (!Modifier.isStatic(field.getModifiers())) {
                 if (ignored) {
                     continue;
@@ -179,7 +182,7 @@ public final class ConfigManager {
                     continue;
                 }
                 throw new ConfigException("Config field " + describe(field)
-                        + " is final and cannot be assigned. Add @Configure.Ignore to exclude it");
+                        + " is final and cannot be assigned. Add @ConfigEntry.Ignore to exclude it");
             }
             if (ignored) {
                 continue;
@@ -189,10 +192,16 @@ public final class ConfigManager {
         return fields;
     }
 
-    private static void applyDeclarations(IConfigScope scope, Configure annotation, List<Field> fields) {
-        String category = annotation.category();
+    private static void applyDeclarations(IConfigScope scope, List<Field> fields) {
+        Map<String, Field> declared = new LinkedHashMap<String, Field>();
         for (Field field : fields) {
+            String category = categoryOf(field);
             String key = entryName(field);
+            Field previous = declared.put(category + '\u0000' + key, field);
+            if (previous != null) {
+                throw new ConfigException("Config fields " + describe(previous) + " and " + describe(field)
+                        + " both map to entry '" + key + "' in category '" + category + "'");
+            }
             String comment = commentOf(field);
             field.setAccessible(true);
             try {
@@ -205,51 +214,82 @@ public final class ConfigManager {
 
     private static Object resolve(IConfigScope scope, String category, String key, String comment, Field field) {
         Class<?> type = field.getType();
+        requireSingleKind(field);
         if (type == boolean.class) {
-            return scope.getBoolean(category, key, defaultOf(field, Configure.DefaultBoolean.class).value(), comment);
+            return scope.getBoolean(category, key, require(field, ConfigEntry.Boolean.class).value(), comment);
         }
         if (type == int.class) {
-            return scope.getInt(category, key, defaultOf(field, Configure.DefaultInt.class).value(), comment);
+            return scope.getInt(category, key, require(field, ConfigEntry.Int.class).value(), comment);
         }
         if (type == long.class) {
-            return scope.getLong(category, key, defaultOf(field, Configure.DefaultLong.class).value(), comment);
+            return scope.getLong(category, key, require(field, ConfigEntry.Long.class).value(), comment);
         }
         if (type == double.class) {
-            return scope.getDouble(category, key, defaultOf(field, Configure.DefaultDouble.class).value(), comment);
+            return scope.getDouble(category, key, require(field, ConfigEntry.Double.class).value(), comment);
         }
         if (type == String.class) {
-            return scope.getString(category, key, defaultOf(field, Configure.DefaultString.class).value(), comment);
+            return scope.getString(category, key, require(field, ConfigEntry.Text.class).value(), comment);
         }
         if (type == String[].class) {
-            return scope.getStringList(category, key, defaultOf(field, Configure.DefaultStringList.class).value(),
-                    comment);
+            return scope.getStringList(category, key, require(field, ConfigEntry.List.class).value(), comment);
         }
         throw new ConfigException("Config field " + describe(field) + " has unsupported type " + type.getName()
                 + ". Supported types are boolean, int, long, double, String and String[]");
     }
 
-    private static <A extends java.lang.annotation.Annotation> A defaultOf(Field field, Class<A> annotation) {
+    /**
+     * Rejects a field that carries no kind annotation or more than one.
+     *
+     * @param field config field
+     */
+    private static void requireSingleKind(Field field) {
+        int count = 0;
+        count += field.isAnnotationPresent(ConfigEntry.Boolean.class) ? 1 : 0;
+        count += field.isAnnotationPresent(ConfigEntry.Int.class) ? 1 : 0;
+        count += field.isAnnotationPresent(ConfigEntry.Long.class) ? 1 : 0;
+        count += field.isAnnotationPresent(ConfigEntry.Double.class) ? 1 : 0;
+        count += field.isAnnotationPresent(ConfigEntry.Text.class) ? 1 : 0;
+        count += field.isAnnotationPresent(ConfigEntry.List.class) ? 1 : 0;
+        if (count == 0) {
+            throw new ConfigException("Config field " + describe(field) + " is missing a kind annotation. Add"
+                    + " exactly one of @ConfigEntry.Boolean, .Int, .Long, .Double, .Text or .List");
+        }
+        if (count > 1) {
+            throw new ConfigException("Config field " + describe(field) + " carries " + count
+                    + " kind annotations, exactly one is allowed. Found a mix of @ConfigEntry.Boolean, .Int, .Long,"
+                    + " .Double, .Text and .List");
+        }
+    }
+
+    private static <A extends java.lang.annotation.Annotation> A require(Field field, Class<A> annotation) {
         A value = field.getAnnotation(annotation);
         if (value == null) {
-            throw new ConfigException("Config field " + describe(field) + " is missing @" + annotation.getSimpleName());
+            throw new ConfigException("Config field " + describe(field) + " is a "
+                    + field.getType().getSimpleName() + " but is not annotated with @ConfigEntry."
+                    + annotation.getSimpleName());
         }
         return value;
     }
 
+    private static String categoryOf(Field field) {
+        ConfigEntry.Category category = field.getAnnotation(ConfigEntry.Category.class);
+        return ConfigDocument.normalize(category == null ? null : category.value());
+    }
+
     private static String entryName(Field field) {
-        Configure.Name name = field.getAnnotation(Configure.Name.class);
+        ConfigEntry.Name name = field.getAnnotation(ConfigEntry.Name.class);
         if (name == null) {
             return field.getName();
         }
         String value = name.value().trim();
         if (value.isEmpty()) {
-            throw new ConfigException("Config field " + describe(field) + " has an empty @Configure.Name");
+            throw new ConfigException("Config field " + describe(field) + " has an empty @ConfigEntry.Name");
         }
         return value;
     }
 
     private static String commentOf(Field field) {
-        Configure.Comment comment = field.getAnnotation(Configure.Comment.class);
+        ConfigEntry.Comment comment = field.getAnnotation(ConfigEntry.Comment.class);
         if (comment == null) {
             return "";
         }

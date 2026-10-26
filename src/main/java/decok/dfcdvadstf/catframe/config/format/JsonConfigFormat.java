@@ -17,7 +17,7 @@ import com.google.gson.JsonPrimitive;
 
 import decok.dfcdvadstf.catframe.config.ConfigCategoryNode;
 import decok.dfcdvadstf.catframe.config.ConfigDocument;
-import decok.dfcdvadstf.catframe.config.ConfigEntry;
+import decok.dfcdvadstf.catframe.config.ConfigValue;
 import decok.dfcdvadstf.catframe.config.ConfigException;
 import decok.dfcdvadstf.catframe.config.IConfigScope;
 
@@ -86,7 +86,7 @@ public final class JsonConfigFormat implements ConfigFormat {
                 continue;
             }
             JsonObject target = omitGeneral ? root : navigate(root, category.getQualifiedName());
-            for (ConfigEntry entry : category.getEntries()) {
+            for (ConfigValue entry : category.getEntries()) {
                 JsonObject holder = new JsonObject();
                 if (entry.getComment() != null && !entry.getComment().isEmpty()) {
                     holder.addProperty(COMMENT, entry.getComment());

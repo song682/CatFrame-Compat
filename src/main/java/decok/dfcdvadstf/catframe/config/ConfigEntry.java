@@ -1,235 +1,134 @@
 package decok.dfcdvadstf.catframe.config;
 
-import java.util.Arrays;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A single config entry: its declared kind, comment, value and the raw value
- * read from the file.
+ * Describes one config entry, placed on a {@code static}, non-{@code final} field
+ * of a class carrying {@link Configure}.
  * <p>
- * The raw value is kept apart from the resolved value so the document can tell
- * "key missing from the file" (fall back to the default) from "key present but
- * unparsable" (fall back to the default and rewrite the file).
+ * Exactly one of the type annotations must be present, and it both selects the
+ * kind of the entry and carries the default value:
+ *
+ * <pre>
+ * &#64;ConfigEntry.Comment("Enable the ItemPhysic compatibility layer")
+ * &#64;ConfigEntry.Boolean(false)
+ * public static boolean itemPhysicCompat;
+ *
+ * &#64;ConfigEntry.Comment("Active UI theme id")
+ * &#64;ConfigEntry.Category("ui")
+ * &#64;ConfigEntry.Text("catframe:vanilla")
+ * public static String activeTheme;
+ * </pre>
+ *
+ * The type annotation and the field type have to agree; {@link ConfigManager}
+ * rejects a mismatch instead of silently converting.
  */
-public final class ConfigEntry {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface ConfigEntry {
 
-    private final String key;
-    private final String category;
+    /**
+     * Comment written above the entry. One element per line.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Comment {
 
-    private ConfigEntryType type;
-    private String comment;
-    private Object defaultValue;
-    private Object value;
-
-    private Object rawValue;
-    private boolean presentInFile;
-
-    ConfigEntry(String category, String key) {
-        this.category = category;
-        this.key = key;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public ConfigEntryType getType() {
-        return type;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public Object getDefaultValue() {
-        return defaultValue;
-    }
-
-    public Object getValue() {
-        return value;
+        String[] value();
     }
 
     /**
-     * Records a raw value parsed from the file.
-     *
-     * @param rawValue parsed value, {@code null} when the key is absent
+     * Category of this entry, using dots for sub categories ({@code "ai.pathing"}).
+     * Defaults to {@link IConfigScope#GENERAL}.
      */
-    public void setRawValue(Object rawValue) {
-        this.rawValue = rawValue;
-        this.presentInFile = rawValue != null;
-    }
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Category {
 
-    public boolean isPresentInFile() {
-        return presentInFile;
+        String value() default IConfigScope.GENERAL;
     }
 
     /**
-     * Applies the declaration coming from the config class and resolves the value
-     * to expose.
-     *
-     * @param type declared kind
-     * @param defaultValue value used when the file has no usable value
-     * @param comment entry comment
-     * @return {@code true} when the on-disk representation has to be rewritten
+     * Overrides the entry name, which defaults to the field name.
      */
-    public boolean define(ConfigEntryType type, Object defaultValue, String comment) {
-        boolean changed = false;
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Name {
 
-        if (this.type != type) {
-            this.type = type;
-            changed = true;
-        }
-        if (!valuesEqual(this.comment, comment)) {
-            this.comment = comment;
-            changed = true;
-        }
-
-        this.defaultValue = defaultValue;
-
-        Object resolved = coerce(rawValue, type);
-        if (resolved == null) {
-            resolved = defaultValue;
-            // Present but unparsable: the file needs to be repaired.
-            if (presentInFile) {
-                changed = true;
-            }
-        }
-
-        if (!valuesEqual(this.value, resolved)) {
-            this.value = resolved;
-            // A value that came from the file and is unchanged must not mark the
-            // document dirty, otherwise every launch rewrites the file.
-            if (!presentInFile) {
-                changed = true;
-            }
-        }
-
-        return changed;
+        String value();
     }
 
     /**
-     * Replaces the current value, keeping the declared kind.
-     *
-     * @param newValue new value
-     * @return {@code true} when the value actually changed
+     * Excludes a field from the config file. The field keeps whatever value it has.
      */
-    public boolean updateValue(Object newValue) {
-        Object coerced = coerce(newValue, type);
-        if (coerced == null) {
-            throw new ConfigException(
-                    "Value for entry '" + key + "' in category '" + category + "' is not a " + type);
-        }
-        if (valuesEqual(this.value, coerced)) {
-            return false;
-        }
-        this.value = coerced;
-        this.presentInFile = true;
-        return true;
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Ignore {}
+
+    /**
+     * Declares a {@code boolean} entry.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Boolean {
+
+        boolean value();
     }
 
     /**
-     * Converts a raw value into the requested kind.
-     *
-     * @param raw raw value
-     * @param type target kind
-     * @return converted value, or {@code null} when the raw value is missing or
-     *         cannot be converted
+     * Declares an {@code int} entry.
      */
-    public static Object coerce(Object raw, ConfigEntryType type) {
-        if (raw == null || type == null) {
-            return null;
-        }
-        try {
-            switch (type) {
-                case BOOLEAN:
-                    if (raw instanceof Boolean) {
-                        return raw;
-                    }
-                    if (raw instanceof String) {
-                        String text = ((String) raw).trim();
-                        if ("true".equalsIgnoreCase(text)) {
-                            return Boolean.TRUE;
-                        }
-                        if ("false".equalsIgnoreCase(text)) {
-                            return Boolean.FALSE;
-                        }
-                    }
-                    return null;
-                case INTEGER:
-                    if (raw instanceof Number) {
-                        return ((Number) raw).intValue();
-                    }
-                    if (raw instanceof String) {
-                        return Integer.parseInt(((String) raw).trim());
-                    }
-                    return null;
-                case LONG:
-                    if (raw instanceof Number) {
-                        return ((Number) raw).longValue();
-                    }
-                    if (raw instanceof String) {
-                        return Long.parseLong(((String) raw).trim());
-                    }
-                    return null;
-                case DOUBLE:
-                    if (raw instanceof Number) {
-                        return ((Number) raw).doubleValue();
-                    }
-                    if (raw instanceof String) {
-                        return Double.parseDouble(((String) raw).trim());
-                    }
-                    return null;
-                case STRING:
-                    if (raw instanceof Object[]) {
-                        return null;
-                    }
-                    return String.valueOf(raw);
-                case STRING_LIST:
-                    if (raw instanceof String[]) {
-                        return raw;
-                    }
-                    if (raw instanceof String) {
-                        return new String[] { (String) raw };
-                    }
-                    if (raw instanceof Iterable) {
-                        java.util.List<String> collected = new java.util.ArrayList<String>();
-                        for (Object element : (Iterable<?>) raw) {
-                            collected.add(element == null ? "" : String.valueOf(element));
-                        }
-                        return collected.toArray(new String[0]);
-                    }
-                    return null;
-                default:
-                    return null;
-            }
-        } catch (NumberFormatException e) {
-            return null;
-        }
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Int {
+
+        int value();
     }
 
     /**
-     * Compares two config values, treating array values element-wise.
-     *
-     * @param left first value
-     * @param right second value
-     * @return {@code true} when both describe the same value
+     * Declares a {@code long} entry.
      */
-    public static boolean valuesEqual(Object left, Object right) {
-        if (left == right) {
-            return true;
-        }
-        if (left == null || right == null) {
-            return false;
-        }
-        if (left instanceof String[] && right instanceof String[]) {
-            return Arrays.equals((String[]) left, (String[]) right);
-        }
-        if (left instanceof String[] || right instanceof String[]) {
-            return false;
-        }
-        return left.equals(right);
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Long {
+
+        long value();
+    }
+
+    /**
+     * Declares a {@code double} entry.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Double {
+
+        double value();
+    }
+
+    /**
+     * Declares a {@code String} entry. Named {@code Text} because an annotation
+     * called {@code String} would shadow {@link java.lang.String} inside its own
+     * body.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface Text {
+
+        String value();
+    }
+
+    /**
+     * Declares a {@code String[]} entry.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @interface List {
+
+        String[] value();
     }
 }

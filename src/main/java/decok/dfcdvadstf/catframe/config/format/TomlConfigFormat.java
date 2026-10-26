@@ -7,7 +7,7 @@ import java.util.List;
 
 import decok.dfcdvadstf.catframe.config.ConfigCategoryNode;
 import decok.dfcdvadstf.catframe.config.ConfigDocument;
-import decok.dfcdvadstf.catframe.config.ConfigEntry;
+import decok.dfcdvadstf.catframe.config.ConfigValue;
 import decok.dfcdvadstf.catframe.config.ConfigException;
 import decok.dfcdvadstf.catframe.config.IConfigScope;
 
@@ -101,7 +101,7 @@ public final class TomlConfigFormat implements ConfigFormat {
                 }
                 out.append('[').append(category.getQualifiedName()).append(']').append(ConfigFiles.newline());
             }
-            for (ConfigEntry entry : category.getEntries()) {
+            for (ConfigValue entry : category.getEntries()) {
                 appendComment(out, entry.getComment());
                 out.append(formatKey(entry.getKey()))
                         .append(" = ")

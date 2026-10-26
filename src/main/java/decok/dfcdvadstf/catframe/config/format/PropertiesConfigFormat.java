@@ -11,7 +11,7 @@ import com.google.gson.JsonParser;
 
 import decok.dfcdvadstf.catframe.config.ConfigCategoryNode;
 import decok.dfcdvadstf.catframe.config.ConfigDocument;
-import decok.dfcdvadstf.catframe.config.ConfigEntry;
+import decok.dfcdvadstf.catframe.config.ConfigValue;
 import decok.dfcdvadstf.catframe.config.ConfigException;
 import decok.dfcdvadstf.catframe.config.IConfigScope;
 
@@ -68,7 +68,7 @@ public final class PropertiesConfigFormat implements ConfigFormat {
             if (out.length() > 0) {
                 out.append(ConfigFiles.newline());
             }
-            for (ConfigEntry entry : category.getEntries()) {
+            for (ConfigValue entry : category.getEntries()) {
                 appendComment(out, entry.getComment());
                 String key = omitGeneral ? entry.getKey()
                         : category.getQualifiedName() + "." + entry.getKey();
