@@ -11,6 +11,7 @@ import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.NaturalExtension;
 import decok.dfcdvadstf.catframe.compact.mcpatcher.natural.RPNaturalExtension;
 import decok.dfcdvadstf.catframe.compact.tooltips.nei.NeiTooltipBridge;
 import decok.dfcdvadstf.catframe.compact.offhand.BackhandDisplayExtension;
+import decok.dfcdvadstf.catframe.model.extended.json.transformation.BlockstateTransformExtension;
 import decok.dfcdvadstf.catframe.model.render.api.ModelRenderExtensions;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackDescriptor;
 import decok.dfcdvadstf.catframe.resources.builtin.BuiltinPackRegistry;
@@ -104,6 +105,15 @@ public class ClientProxy extends CommonProxy {
             ModelRenderExtensions.register(NaturalExtension.INSTANCE);
             logger.info("OptiFuture Natural Textures bridge enabled (OptiFuture detected).");
         }
+
+        // ── Forge model-level transform bridge (arbitrary-angle rotation) ──
+        // Reads the Forge `transform` field (translation / rotation / scale around an
+        // optional pivot) from the raw JSON CatFrame keeps for compatibility layers -
+        // the variant's rawJson first, the model's unrecognized top-level keys second -
+        // and installs the resulting block-space matrix through the native
+        // RenderContext.displayTransform channel. Registered unconditionally: the
+        // extension stays inert unless a model actually declares the field.
+        ModelRenderExtensions.register(BlockstateTransformExtension.INSTANCE);
 
         // ── Chromatic Tooltips rendering bridge ──
         // The actual redirection lives in the late mixins (MixinGuiGraphicsExtractor /
