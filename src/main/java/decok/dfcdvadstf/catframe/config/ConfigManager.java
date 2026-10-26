@@ -215,17 +215,43 @@ public final class ConfigManager {
     private static Object resolve(IConfigScope scope, String category, String key, String comment, Field field) {
         Class<?> type = field.getType();
         requireSingleKind(field);
+
         if (type == boolean.class) {
             return scope.getBoolean(category, key, require(field, ConfigEntry.Boolean.class).value(), comment);
         }
         if (type == int.class) {
-            return scope.getInt(category, key, require(field, ConfigEntry.Int.class).value(), comment);
+            ConfigEntry.Int declared = require(field, ConfigEntry.Int.class);
+            requireValidRange(field, declared.min(), declared.max());
+            int value = scope.getInt(category, key, declared.value(),
+                    withRange(comment, declared.min(), declared.max()));
+            int clamped = Math.min(declared.max(), Math.max(declared.min(), value));
+            if (clamped != value) {
+                reportClamp(scope, category, key, field, value, clamped);
+            }
+            return clamped;
         }
         if (type == long.class) {
-            return scope.getLong(category, key, require(field, ConfigEntry.Long.class).value(), comment);
+            ConfigEntry.Long declared = require(field, ConfigEntry.Long.class);
+            requireValidRange(field, declared.min(), declared.max());
+            long value = scope.getLong(category, key, declared.value(),
+                    withRange(comment, declared.min(), declared.max()));
+            long clamped = Math.min(declared.max(), Math.max(declared.min(), value));
+            if (clamped != value) {
+                reportClamp(scope, category, key, field, value, clamped);
+            }
+            return clamped;
         }
         if (type == double.class) {
-            return scope.getDouble(category, key, require(field, ConfigEntry.Double.class).value(), comment);
+            ConfigEntry.Double declared = require(field, ConfigEntry.Double.class);
+            requireValidRange(field, declared.min(), declared.max());
+            double value = scope.getDouble(category, key, declared.value(),
+                    withRange(comment, declared.min(), declared.max()));
+            double clamped = Double.isNaN(value) ? declared.value()
+                    : Math.min(declared.max(), Math.max(declared.min(), value));
+            if (clamped != value) {
+                reportClamp(scope, category, key, field, value, clamped);
+            }
+            return clamped;
         }
         if (type == String.class) {
             return scope.getString(category, key, require(field, ConfigEntry.Text.class).value(), comment);
@@ -235,6 +261,58 @@ public final class ConfigManager {
         }
         throw new ConfigException("Config field " + describe(field) + " has unsupported type " + type.getName()
                 + ". Supported types are boolean, int, long, double, String and String[]");
+    }
+
+    private static void requireValidRange(Field field, long min, long max) {
+        if (min > max) {
+            throw new ConfigException("Config field " + describe(field) + " declares min " + min + " above max " + max);
+        }
+    }
+
+    private static void requireValidRange(Field field, double min, double max) {
+        if (min > max) {
+            throw new ConfigException("Config field " + describe(field) + " declares min " + min + " above max " + max);
+        }
+    }
+
+    /**
+     * Rewrites an out of range value to the nearest bound and persists it, so the
+     * correction is not recomputed on every launch.
+     */
+    private static void reportClamp(IConfigScope scope, String category, String key, Field field, Object original,
+            Object clamped) {
+        LOGGER.warn("Config entry '{}' in category '{}' of {} is out of range, clamped from {} to {}", key, category,
+                describe(field), original, clamped);
+        scope.set(category, key, clamped);
+    }
+
+    /**
+     * Appends the {@code Range: [min, max]} line that Forge writes for bounded
+     * entries, so the bound is visible in files produced by every format.
+     */
+    private static String withRange(String comment, int min, int max) {
+        if (min == Integer.MIN_VALUE && max == Integer.MAX_VALUE) {
+            return comment;
+        }
+        return appendLine(comment, "Range: [" + min + ", " + max + "]");
+    }
+
+    private static String withRange(String comment, long min, long max) {
+        if (min == java.lang.Long.MIN_VALUE && max == java.lang.Long.MAX_VALUE) {
+            return comment;
+        }
+        return appendLine(comment, "Range: [" + min + ", " + max + "]");
+    }
+
+    private static String withRange(String comment, double min, double max) {
+        if (min == -java.lang.Double.MAX_VALUE && max == java.lang.Double.MAX_VALUE) {
+            return comment;
+        }
+        return appendLine(comment, "Range: [" + min + ", " + max + "]");
+    }
+
+    private static String appendLine(String text, String line) {
+        return text == null || text.isEmpty() ? line : text + '\n' + line;
     }
 
     /**
