@@ -21,6 +21,9 @@ public final class ForgeConfigScope implements IConfigScope {
 
     public ForgeConfigScope(Configuration configuration) {
         this.configuration = configuration;
+        // Reading is what populates the category tree; without it every lookup would
+        // create a fresh default and save() would overwrite the user's file.
+        configuration.load();
     }
 
     @Override

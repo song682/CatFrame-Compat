@@ -8,6 +8,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import decok.dfcdvadstf.catframe.compact.Tags;
 import decok.dfcdvadstf.catframe.compact.proxy.CommonProxy;
+import decok.dfcdvadstf.catframe.config.ConfigManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,6 +42,9 @@ public class CatFrameCompat {
     public void preInit(FMLPreInitializationEvent event) {
         config = new CompatConfig(event.getSuggestedConfigurationFile());
         logger = event.getModLog();
+
+        ConfigManager.init(event.getModConfigurationDirectory());
+        ConfigManager.register(ExampleConfig.class);
 
         proxy.preInit(event);
     }
