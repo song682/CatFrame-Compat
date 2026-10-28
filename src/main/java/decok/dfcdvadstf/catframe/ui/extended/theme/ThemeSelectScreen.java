@@ -2,7 +2,7 @@ package decok.dfcdvadstf.catframe.ui.extended.theme;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import decok.dfcdvadstf.catframe.CatFrameCompat;
+import decok.dfcdvadstf.catframe.CompatConfig;
 import decok.dfcdvadstf.catframe.ui.GuiDrawing;
 import decok.dfcdvadstf.catframe.ui.Text;
 import decok.dfcdvadstf.catframe.ui.extended.ScreenExtended;
@@ -500,7 +500,7 @@ public class ThemeSelectScreen extends ScreenExtended {
         }
         String id = themeIds.get(selectedIndex);
         ThemeManager.getInstance().setActive(id);
-        CatFrameCompat.config.saveActiveTheme(id);
+        CompatConfig.saveActiveTheme(id);
         // Played after activation so the sound resolves against the new theme.
         playThemeSound(ThemeKeys.Sounds.BUTTON_PRESS);
     }
