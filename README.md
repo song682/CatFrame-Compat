@@ -35,11 +35,13 @@ The mod compatibility layer for [CatFrame](https://github.com/song682/CatFrame),
 - NotEnoughItems (Unofficial, GTNH edition): Keeps NEI's single tooltip frame while CatFrame's structured tooltip components (e.g. the bundle grid) are rendered inside it, instead of the two mods stacking two frames.
 
 ## Known Limitations
+
 ### CTM Part
  **Glass Pane CTM Corner Connection**: When using CTM on glass panes, the corner connections may display incorrect variants.
 This is a limitation: CatFrame's VMM rendering bypasses the specialized pane rendering logic (PaneRenderHelper/GlassPaneRenderer) that handles thin-pane connectivity.
 The CTM engine uses generic neighbor detection which doesn't account for pane thin-plate geometry. Basic pane CTM connections work correctly; only corner/edge variants may be inaccurate.        
 Fixed via the built-in texture packs.
+
 ### Backhand
 **Third-person offhand block items**: CatFrame's `RenderJsonItemModel.resolveHeadSlotKind` keys head-slot ownership off `stack != entity.getHeldItem()`, and Backhand's third-person pass does no slot swap, so an `ItemBlock` held in the offhand is misclassified as a head-slot render (`ITEM_HEAD` phase + head preTransform) and renders misplaced until the CatFrame core learns to distinguish the offhand.    
 
